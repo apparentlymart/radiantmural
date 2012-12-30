@@ -3,18 +3,18 @@
 wall_thickness = 3.0
 base_thickness = 2.0
 screen_thickness = 1.0
-cell_pitch = 50.0
+cell_pitch = 30.0
 cells_horiz = 10
 cells_vert = 7
-height = 12.0
-ledstrip_thickness = 2.0
-ledstrip_width = 10.0
-mitre_width = 10.0
-part_padding = 2.0
+height = 20.0
+ledstrip_thickness = 4.0
+ledstrip_width = 18.0
+mitre_width = 9.0
+part_padding = 4.0
 fastener_bracket_thickness = 8.0
 fastener_bracket_curve_radius = 2
 fastener_tab_thickness = 3.0
-fastener_tab_width = 20.0
+fastener_tab_width = 11.0
 
 from cadoodle import Drawing
 from math import ceil, floor
