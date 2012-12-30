@@ -1,7 +1,7 @@
 
 # Tweakable physical parameters
-wall_thickness = 3.0
-base_thickness = 2.0
+wall_thickness = 3.175
+base_thickness = 3.175
 screen_thickness = 1.0
 cell_pitch = 30.0
 cells_horiz = 10
@@ -11,10 +11,10 @@ ledstrip_thickness = 4.0
 ledstrip_width = 18.0
 mitre_width = 9.0
 part_padding = 4.0
-fastener_bracket_thickness = 8.0
 fastener_bracket_curve_radius = 2
-fastener_tab_thickness = 3.0
+fastener_tab_thickness = 3.175
 fastener_tab_width = 11.0
+fastener_bracket_thickness = (cell_pitch - fastener_tab_width - wall_thickness) / 2
 
 from cadoodle import Drawing
 from math import ceil, floor
