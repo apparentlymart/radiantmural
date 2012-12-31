@@ -16,6 +16,8 @@ fastener_bracket_curve_radius = 2
 fastener_tab_thickness = 3.175
 fastener_tab_width = 11.0
 fastener_bracket_thickness = (cell_pitch - fastener_tab_width - wall_thickness) / 2
+power_jack_diameter = 13.5
+mic_diameter = 10.0
 
 from cadoodle import Drawing
 from math import ceil, floor
@@ -241,6 +243,19 @@ def draw_horiz_edge(part):
 
     # West edge
     part.south(height / 2.0)
+
+    # Power jack hole
+    part.move((cell_pitch * 6) + (wall_thickness / 2), (power_jack_diameter / 2.0))
+    part.curve_ne_cw(power_jack_diameter / 2.0)
+    part.curve_se_cw(power_jack_diameter / 2.0)
+    part.curve_sw_cw(power_jack_diameter / 2.0)
+    part.curve_nw_cw(power_jack_diameter / 2.0)
+    part.move(0, -power_jack_diameter / 2.0)
+    part.move(-cell_pitch * 4, mic_diameter / 2.0)
+    part.curve_ne_cw(mic_diameter / 2.0)
+    part.curve_se_cw(mic_diameter / 2.0)
+    part.curve_sw_cw(mic_diameter / 2.0)
+    part.curve_nw_cw(mic_diameter / 2.0)
 
 vert.x = part_padding
 vert.y = part_padding
