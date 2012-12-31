@@ -22,6 +22,7 @@ power_jack_diameter = 13.5
 mic_diameter = 10.0
 mitre_hole_width = mitre_width + mitre_tolerance
 fastener_mitre_hole_width = fastener_mitre_width + mitre_tolerance
+fastener_to_mitre_curve_radius = 1
 
 # Two of the horizontal cells are special in that they poke through the base
 # further to form the mechanism by which the grid fastens to the
@@ -296,28 +297,68 @@ def draw_base(part):
     # has some extra holes cut in it for the wall mitres.
     draw_screen(part)
 
-    along_offset = (cell_pitch - mitre_hole_width) / 2
-    aside_offset = cell_pitch - (wall_thickness / 2)
-    fastener_along_offset = (cell_pitch - fastener_mitre_hole_width) / 2
+    # Since the fastener hole intersects with the vertical mitre holes
+    # we want to cut it to fit between the two adjacent holes rather than
+    # explicitly cutting a tolerance like we would elsewhere.
+    effective_fastener_hole_width = cell_pitch - wall_thickness
+
+    along_offset = (cell_pitch - mitre_hole_width) / 2.0
+    aside_offset = cell_pitch - (wall_thickness / 2.0)
+    fastener_along_offset = (cell_pitch - effective_fastener_hole_width) / 2.0
 
     for ni in xrange(0, cells_vert + 1):
         for ei in xrange(0, cells_horiz):
             is_fastener = ei in fastener_cells
-            part.x = origin_x + (wall_thickness / 2) + (cell_pitch * (ei + 1))
-            part.y = origin_y + (wall_thickness / 2) + (cell_pitch * ni)
+            part.x = origin_x + (wall_thickness / 2.0) + (cell_pitch * (ei + 1.0))
+            part.y = origin_y + (wall_thickness / 2.0) + (cell_pitch * ni)
 
             if is_fastener:
                 part.move(fastener_along_offset, aside_offset)
-                part.east(fastener_mitre_hole_width)
-                part.north(wall_thickness)
-                part.west(fastener_mitre_hole_width)
-                part.south(wall_thickness)
+                part.move(0, -fastener_to_mitre_curve_radius)
+                part.curve_nw_cw(fastener_to_mitre_curve_radius)
+                part.east(effective_fastener_hole_width - (fastener_to_mitre_curve_radius * 2.0))
+                part.curve_ne_cw(fastener_to_mitre_curve_radius)
+                part.move(0, wall_thickness + fastener_to_mitre_curve_radius * 2)
+                part.curve_se_cw(fastener_to_mitre_curve_radius)
+                part.west(effective_fastener_hole_width - (fastener_to_mitre_curve_radius * 2.0))
+                part.curve_sw_cw(fastener_to_mitre_curve_radius)
+                part.move(0, -wall_thickness)
             else:
                 part.move(along_offset, aside_offset)
                 part.east(mitre_hole_width)
                 part.north(wall_thickness)
                 part.west(mitre_hole_width)
                 part.south(wall_thickness)
+
+    fastener_side_space = wall_thickness + (fastener_to_mitre_curve_radius * 2)
+    fastener_side_cut = mitre_hole_width - fastener_side_space
+
+    for ei in xrange(0, cells_horiz + 1):
+        for ni in xrange(0, cells_vert + 1):
+            is_fastener_left = ei in fastener_cells
+            is_fastener_right = ei - 1 in fastener_cells
+            part.x = origin_x + (wall_thickness / 2.0) + (cell_pitch * ei)
+            part.y = origin_y + (wall_thickness / 2.0) + (cell_pitch * ni)
+
+            part.move(
+                cell_pitch - (wall_thickness / 2.0),
+                cell_pitch - (mitre_hole_width / 2.0),
+            )
+
+            if is_fastener_right:
+                part.north(fastener_side_cut / 2.0)
+                part.move(0, fastener_side_space)
+                part.north(fastener_side_cut / 2.0)
+            else:
+                part.north(mitre_hole_width)
+            part.east(wall_thickness)
+            if is_fastener_left:
+                part.south(fastener_side_cut / 2.0)
+                part.move(0, -fastener_side_space)
+                part.south(fastener_side_cut / 2.0)
+            else:
+                part.south(mitre_hole_width)
+            part.west(wall_thickness)
 
 
 vert.x = part_padding
@@ -342,6 +383,6 @@ draw_base(base)
 
 screen.x = part_padding
 screen.y = (part_padding * 7) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2))
-#draw_screen(screen)
+draw_screen(screen)
 
 d.save("schematic.dxf")
