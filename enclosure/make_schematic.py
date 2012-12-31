@@ -1,9 +1,9 @@
 
 # Tweakable physical parameters
-wall_thickness = 3.175
-base_thickness = 3.175
-screen_thickness = 3.175
-frame_thickness = 3.175
+wall_thickness = 3.25
+base_thickness = 3.25
+screen_thickness = 3.25
+frame_thickness = 3.25
 cell_pitch = 30.0
 cells_horiz = 12  # must be at least 6, or adjust the power/mic hole locations
 cells_vert = 7
@@ -13,7 +13,7 @@ ledstrip_width = 18.0
 mitre_width = 9.0
 part_padding = 4.0
 fastener_bracket_curve_radius = 2
-fastener_tab_thickness = 3.175
+fastener_tab_thickness = 3.25
 fastener_tab_width = 11.0
 fastener_bracket_thickness = (cell_pitch - fastener_tab_width - wall_thickness) / 2
 power_jack_diameter = 13.5
