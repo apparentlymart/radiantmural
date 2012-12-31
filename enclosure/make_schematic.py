@@ -11,6 +11,7 @@ height = 20.0
 ledstrip_thickness = 4.0
 ledstrip_width = 18.0
 mitre_width = 9.0
+mitre_tolerance = 0.25
 part_padding = 4.0
 fastener_bracket_curve_radius = 2
 fastener_tab_thickness = 3.25
@@ -18,6 +19,7 @@ fastener_tab_width = 11.0
 fastener_bracket_thickness = (cell_pitch - fastener_tab_width - wall_thickness) / 2
 power_jack_diameter = 13.5
 mic_diameter = 10.0
+mitre_hole_width = mitre_width + mitre_tolerance
 
 from cadoodle import Drawing
 from math import ceil, floor
@@ -28,6 +30,7 @@ vert = d.add_layer("VERT")
 horiz = d.add_layer("HORIZ")
 vert_edge = d.add_layer("VERT_EDGE")
 horiz_edge = d.add_layer("HORIZ_EDGE")
+screen = d.add_layer("SCREEN")
 
 def draw_vert(vert):
     cell_flush_bottom = (
@@ -248,17 +251,39 @@ def draw_horiz_edge(part):
     part.south(height / 2.0)
 
     # Power jack hole
-    part.move((cell_pitch * 6) + (wall_thickness / 2), (power_jack_diameter / 2.0))
+    part.move((cell_pitch * 6.0) + (wall_thickness / 2.0), (power_jack_diameter / 2.0))
     part.curve_ne_cw(power_jack_diameter / 2.0)
     part.curve_se_cw(power_jack_diameter / 2.0)
     part.curve_sw_cw(power_jack_diameter / 2.0)
     part.curve_nw_cw(power_jack_diameter / 2.0)
     part.move(0, -power_jack_diameter / 2.0)
-    part.move(-cell_pitch * 4, mic_diameter / 2.0)
+    part.move(-cell_pitch * 4.0, mic_diameter / 2.0)
     part.curve_ne_cw(mic_diameter / 2.0)
     part.curve_se_cw(mic_diameter / 2.0)
     part.curve_sw_cw(mic_diameter / 2.0)
     part.curve_nw_cw(mic_diameter / 2.0)
+
+
+def draw_screen(part):
+    between_hole_length = cell_pitch - mitre_hole_width
+
+    counts_dirs = [
+        (part.east, part.north, cells_horiz + 2),
+        (part.north, part.west, cells_vert + 2),
+        (part.west, part.south, cells_horiz + 2),
+        (part.south, part.east, cells_vert + 2),
+    ]
+
+    for along, inward, count in counts_dirs:
+        along(wall_thickness / 2.0)
+        for i in xrange(0, count):
+            along(between_hole_length / 2.0)
+            inward(wall_thickness)
+            along(mitre_hole_width)
+            inward(-wall_thickness)
+            along(between_hole_length / 2.0)
+        along(wall_thickness / 2.0)
+
 
 vert.x = part_padding
 vert.y = part_padding
@@ -275,5 +300,9 @@ draw_horiz(horiz)
 horiz_edge.x = part_padding
 horiz_edge.y = (part_padding * 4) + (height * 3) + (base_thickness * 3) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
 draw_horiz_edge(horiz_edge)
+
+screen.x = part_padding
+screen.y = (part_padding * 5) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness
+draw_screen(screen)
 
 d.save("schematic.dxf")
