@@ -17,9 +17,20 @@ fastener_bracket_curve_radius = 2
 fastener_tab_thickness = 3.25
 fastener_tab_width = 11.0
 fastener_bracket_thickness = (cell_pitch - fastener_tab_width - wall_thickness) / 2
+fastener_mitre_width = fastener_tab_width + (fastener_bracket_thickness * 2)
 power_jack_diameter = 13.5
 mic_diameter = 10.0
 mitre_hole_width = mitre_width + mitre_tolerance
+fastener_mitre_hole_width = fastener_mitre_width + mitre_tolerance
+
+# Two of the horizontal cells are special in that they poke through the base
+# further to form the mechanism by which the grid fastens to the
+# base such that it can be removed later for maintenence.
+fastener_cell_idx = int(cells_horiz * 0.25)
+fastener_cells = [
+    fastener_cell_idx,
+    cells_horiz - fastener_cell_idx - 1,
+]
 
 from cadoodle import Drawing
 from math import ceil, floor
@@ -30,6 +41,7 @@ vert = d.add_layer("VERT")
 horiz = d.add_layer("HORIZ")
 vert_edge = d.add_layer("VERT_EDGE")
 horiz_edge = d.add_layer("HORIZ_EDGE")
+base = d.add_layer("BASE")
 screen = d.add_layer("SCREEN")
 
 def draw_vert(vert):
@@ -137,15 +149,6 @@ def draw_horiz(horiz):
 
     horiz.move(0, (height / 2.0) + base_thickness)
 
-    # Two of the cells are special in that they poke through the base
-    # further to form the mechanism by which the grid fastens to the
-    # base such that it can be removed later for maintenence.
-    fastener_cell_idx = int(cells_horiz * 0.25)
-    fastener_cells = [
-        fastener_cell_idx,
-        cells_horiz - fastener_cell_idx - 1,
-    ]
-
     # Bottom edge
     horiz.east(wall_thickness / 2.0) # extra "lip" for the outer wall
     for i in xrange(0, cells_horiz):
@@ -158,9 +161,7 @@ def draw_horiz(horiz):
             horiz.south(base_thickness + fastener_bracket_thickness + fastener_tab_thickness - fastener_bracket_curve_radius)
             horiz.curve_sw_ccw(fastener_bracket_curve_radius)
             horiz.east(
-                fastener_tab_width
-                + (fastener_bracket_thickness * 2)
-                - (fastener_bracket_curve_radius * 2)
+                fastener_mitre_width - (fastener_bracket_curve_radius * 2)
             )
             horiz.curve_se_ccw(fastener_bracket_curve_radius)
             horiz.north(base_thickness + fastener_bracket_thickness + fastener_tab_thickness - fastener_bracket_curve_radius)
@@ -285,6 +286,40 @@ def draw_screen(part):
         along(wall_thickness / 2.0)
 
 
+def draw_base(part):
+    # It's easier to be able to return back to the origin
+    # for each iteration.
+    origin_x = part.x
+    origin_y = part.y
+
+    # The base starts off being the same as the screen and then
+    # has some extra holes cut in it for the wall mitres.
+    draw_screen(part)
+
+    along_offset = (cell_pitch - mitre_hole_width) / 2
+    aside_offset = cell_pitch - (wall_thickness / 2)
+    fastener_along_offset = (cell_pitch - fastener_mitre_hole_width) / 2
+
+    for ni in xrange(0, cells_vert + 1):
+        for ei in xrange(0, cells_horiz):
+            is_fastener = ei in fastener_cells
+            part.x = origin_x + (wall_thickness / 2) + (cell_pitch * (ei + 1))
+            part.y = origin_y + (wall_thickness / 2) + (cell_pitch * ni)
+
+            if is_fastener:
+                part.move(fastener_along_offset, aside_offset)
+                part.east(fastener_mitre_hole_width)
+                part.north(wall_thickness)
+                part.west(fastener_mitre_hole_width)
+                part.south(wall_thickness)
+            else:
+                part.move(along_offset, aside_offset)
+                part.east(mitre_hole_width)
+                part.north(wall_thickness)
+                part.west(mitre_hole_width)
+                part.south(wall_thickness)
+
+
 vert.x = part_padding
 vert.y = part_padding
 draw_vert(vert)
@@ -301,8 +336,12 @@ horiz_edge.x = part_padding
 horiz_edge.y = (part_padding * 4) + (height * 3) + (base_thickness * 3) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
 draw_horiz_edge(horiz_edge)
 
+base.x = part_padding
+base.y = (part_padding * 5) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness
+draw_base(base)
+
 screen.x = part_padding
-screen.y = (part_padding * 5) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness
-draw_screen(screen)
+screen.y = (part_padding * 7) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2))
+#draw_screen(screen)
 
 d.save("schematic.dxf")
