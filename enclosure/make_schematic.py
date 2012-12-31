@@ -2,9 +2,10 @@
 # Tweakable physical parameters
 wall_thickness = 3.175
 base_thickness = 3.175
-screen_thickness = 1.0
+screen_thickness = 3.175
+frame_thickness = 3.175
 cell_pitch = 30.0
-cells_horiz = 10
+cells_horiz = 12  # must be at least 6, or adjust the power/mic hole locations
 cells_vert = 7
 height = 20.0
 ledstrip_thickness = 4.0
@@ -23,6 +24,8 @@ d = Drawing()
 
 vert = d.add_layer("VERT")
 horiz = d.add_layer("HORIZ")
+vert_edge = d.add_layer("VERT_EDGE")
+horiz_edge = d.add_layer("HORIZ_EDGE")
 
 def draw_vert(vert):
     cell_flush_bottom = (
@@ -37,7 +40,7 @@ def draw_vert(vert):
 
     # Bottom edge
     vert.east(wall_thickness / 2.0) # extra "lip" for the outer wall
-    for i in xrange(0, cells_vert):
+    for i in xrange(0, cells_vert + 1):
         # complete the mitre
         vert.east(mitre_width / 2.0)
         vert.north(base_thickness)
@@ -56,7 +59,7 @@ def draw_vert(vert):
 
     # Top edge
     vert.west(wall_thickness / 2.0) # extra "lip" for the outer wall
-    for i in xrange(0, cells_vert):
+    for i in xrange(0, cells_vert + 1):
         # complete the slit for the perpendicular walls
         vert.west(wall_thickness / 2.0)
         vert.north(height / 2.0)
@@ -69,9 +72,47 @@ def draw_vert(vert):
     # West edge
     vert.south((height / 2.0) + base_thickness)
 
-vert.x = part_padding
-vert.y = part_padding
-draw_vert(vert)
+
+def draw_vert_edge(part):
+
+    cell_flush_bottom = cell_pitch - mitre_width
+    cell_flush_top = (
+        cell_pitch
+        - mitre_width
+        - wall_thickness
+    )
+
+    # bottom edge
+    part.move(0, base_thickness)
+    part.east(wall_thickness / 2.0)
+    for i in xrange(0, cells_vert + 2):
+        part.east(cell_flush_bottom / 2.0)
+        part.south(base_thickness)
+        part.east(mitre_width)
+        part.north(base_thickness)
+        part.east(cell_flush_bottom / 2.0)
+    part.east(wall_thickness / 2.0)
+
+    # East edge
+    part.north(height / 2.0)
+
+    # Top edge
+    part.west(wall_thickness / 2.0)
+    for i in xrange(0, cells_vert + 2):
+        part.west(wall_thickness / 2.0)
+        part.north(height / 2.0)
+        part.west(cell_flush_top / 2.0)
+        part.north(screen_thickness + frame_thickness)
+        part.west(mitre_width)
+        part.south(screen_thickness + frame_thickness)
+        part.west(cell_flush_top / 2.0)
+        part.south(height / 2.0)
+        part.west(wall_thickness / 2.0)
+    part.west(wall_thickness / 2.0)
+
+    # West edge
+    part.south(height / 2.0)
+
 
 def draw_horiz(horiz):
     cell_flush_bottom = (
@@ -151,8 +192,70 @@ def draw_horiz(horiz):
     # West edge
     horiz.south(height / 2.0)
 
+
+def draw_horiz_edge(part):
+    cell_flush_bottom = (
+        cell_pitch
+        - wall_thickness # slit for the perpendicular wall
+        - mitre_width    # mitre to mate with the base
+    )
+    cell_flush_top = (
+        cell_pitch
+        - mitre_width
+    )
+
+    part.move(0, (height / 2.0) + base_thickness)
+
+    part.east(wall_thickness / 2.0) # extra "lip" for the outer wall
+    end_up = True
+    for i in xrange(0, cells_horiz + 2):
+        # complete the slit for the perpendicular walls
+        part.east(wall_thickness / 2.0)
+        if end_up:
+            part.south(height / 2.0)
+        part.east(cell_flush_bottom / 2.0)
+        part.south(base_thickness)
+        part.east(mitre_width)
+        part.north(base_thickness)
+        part.east(cell_flush_bottom / 2.0)
+        if (i % 2 == 0) or (i == cells_horiz + 1):
+            part.north(height / 2.0)
+            end_up = True
+        else:
+            end_up = False
+        part.east(wall_thickness / 2.0)
+    part.east(wall_thickness / 2.0) # extra "lip" for the outer wall
+
+    # East edge
+    part.north(height / 2.0)
+
+    # Top edge.
+    part.west(wall_thickness / 2.0)
+    for i in xrange(0, cells_horiz + 2):
+        part.west(cell_flush_top / 2.0)
+        part.north(screen_thickness + frame_thickness)
+        part.west(mitre_width)
+        part.south(screen_thickness + frame_thickness)
+        part.west(cell_flush_top / 2.0)
+    part.west(wall_thickness / 2.0)
+
+    # West edge
+    part.south(height / 2.0)
+
+vert.x = part_padding
+vert.y = part_padding
+draw_vert(vert)
+
+vert_edge.x = part_padding
+vert_edge.y = part_padding * 2 + height + base_thickness
+draw_vert_edge(vert_edge)
+
 horiz.x = part_padding
-horiz.y = (part_padding * 2) + height + base_thickness + fastener_tab_thickness + fastener_bracket_thickness
+horiz.y = (part_padding * 3) + (height * 2) + (base_thickness * 2) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
 draw_horiz(horiz)
+
+horiz_edge.x = part_padding
+horiz_edge.y = (part_padding * 4) + (height * 3) + (base_thickness * 3) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
+draw_horiz_edge(horiz_edge)
 
 d.save("schematic.dxf")
