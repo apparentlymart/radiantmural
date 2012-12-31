@@ -41,23 +41,26 @@ def draw_vert(vert):
     )
 
     # Bottom edge
+    vert.move(0, base_thickness)
     vert.east(wall_thickness / 2.0) # extra "lip" for the outer wall
     for i in xrange(0, cells_vert + 1):
         # complete the mitre
         vert.east(mitre_width / 2.0)
-        vert.north(base_thickness)
+        if i != 0:
+            vert.north(base_thickness)
         vert.east(cell_flush_bottom / 2.0)
         vert.north(ledstrip_thickness)
         vert.east(ledstrip_width)
         vert.south(ledstrip_thickness)
         vert.east(cell_flush_bottom / 2.0)
-        vert.south(base_thickness)
+        if i != cells_vert:
+            vert.south(base_thickness)
         # start the next mitre
         vert.east(mitre_width / 2.0)
     vert.east(wall_thickness / 2.0) # extra "lip" for the outer wall
 
     # East edge
-    vert.north((height / 2.0) + base_thickness)
+    vert.north(height / 2.0)
 
     # Top edge
     vert.west(wall_thickness / 2.0) # extra "lip" for the outer wall
@@ -72,7 +75,7 @@ def draw_vert(vert):
     vert.west(wall_thickness / 2.0) # extra "lip" for the outer wall
 
     # West edge
-    vert.south((height / 2.0) + base_thickness)
+    vert.south(height / 2.0)
 
 
 def draw_vert_edge(part):
