@@ -12,7 +12,7 @@ ledstrip_thickness = 4.0
 ledstrip_width = 18.0
 mitre_width = 9.0
 mitre_tolerance = 0.5
-part_padding = 5.0
+part_padding = 10.0
 fastener_bracket_curve_radius = 2
 fastener_tab_thickness = 3.5
 fastener_tab_width = 11.0
@@ -23,7 +23,9 @@ power_jack_diameter = 13.5
 mic_diameter = 10.0
 mitre_hole_width = mitre_width + mitre_tolerance
 fastener_mitre_hole_width = fastener_mitre_width + mitre_tolerance
-fastener_to_mitre_curve_radius = 1
+fastener_to_mitre_curve_radius = 1.0
+frame_lip = 10.0
+frame_lip_curve_radius = 5.0
 
 # Two of the horizontal cells are special in that they poke through the base
 # further to form the mechanism by which the grid fastens to the
@@ -46,6 +48,7 @@ horiz_edge = d.add_layer("HORIZ_EDGE")
 base = d.add_layer("BASE")
 screen = d.add_layer("SCREEN")
 fasten_tab = d.add_layer("FASTEN_TAB")
+frame = d.add_layer("FRAME")
 
 def draw_vert(vert):
     cell_flush_bottom = (
@@ -385,6 +388,43 @@ def draw_fasten_tab(part):
     part.curve_nw_ccw(fastener_tab_curve_radius)
     part.south(fastener_tab_handle_width - (fastener_tab_curve_radius * 2.0))
 
+
+def draw_frame(part):
+    origin_x = part.x
+    origin_y = part.y
+
+    straight_across_outer = ((cells_horiz + 2) * cell_pitch) + (frame_lip * 2) - (frame_lip_curve_radius * 2)
+    straight_down_outer = ((cells_vert + 2) * cell_pitch) + (frame_lip * 2) - (frame_lip_curve_radius * 2)
+    straight_across_inner = (cells_horiz * cell_pitch) - (frame_lip_curve_radius * 2)
+    straight_down_inner = (cells_vert * cell_pitch) - (frame_lip_curve_radius * 2)
+
+    part.move(0, frame_lip_curve_radius)
+    part.curve_sw_ccw(frame_lip_curve_radius)
+    part.east(straight_across_outer)
+    part.curve_se_ccw(frame_lip_curve_radius)
+    part.north(straight_down_outer)
+    part.curve_ne_ccw(frame_lip_curve_radius)
+    part.west(straight_across_outer)
+    part.curve_nw_ccw(frame_lip_curve_radius)
+    part.south(straight_down_outer)
+
+    part.x = origin_x
+    part.y = origin_y
+
+    part.move(
+        frame_lip + cell_pitch + (wall_thickness / 2.0),
+        frame_lip + cell_pitch + (wall_thickness / 2.0),
+    )
+    part.move(0, frame_lip_curve_radius)
+    part.curve_sw_ccw(frame_lip_curve_radius)
+    part.east(straight_across_inner)
+    part.curve_se_ccw(frame_lip_curve_radius)
+    part.north(straight_down_inner)
+    part.curve_ne_ccw(frame_lip_curve_radius)
+    part.west(straight_across_inner)
+    part.curve_nw_ccw(frame_lip_curve_radius)
+    part.south(straight_down_inner)
+
 vert.x = part_padding
 vert.y = part_padding
 draw_vert(vert)
@@ -412,5 +452,9 @@ draw_screen(screen)
 fasten_tab.x = (part_padding * 4) + (wall_thickness) + (cell_pitch * (cells_vert + 2))
 fasten_tab.y = part_padding
 draw_fasten_tab(fasten_tab)
+
+frame.x = part_padding
+frame.y = (part_padding * 9) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2) * 2)
+draw_frame(frame)
 
 d.save("schematic.dxf")
