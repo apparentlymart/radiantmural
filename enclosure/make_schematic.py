@@ -465,46 +465,114 @@ def y_axis_label(y, text):
         halign=RIGHT,
         valign=BOTTOM,
         alignpoint=(-part_padding, y + part_padding),
-        height=10,
+        height=8,
+        layer="LABELS",
+    ))
+
+
+def x_axis_label(x, text):
+    from dxfwrite import DXFEngine as dxf
+    from dxfwrite.const import LEFT, TOP
+    d.dwg.add(dxf.text(
+        text,
+        halign=LEFT,
+        valign=TOP,
+        alignpoint=(x  + part_padding, -part_padding),
+        height=8,
+        layer="LABELS",
+    ))
+
+
+def draw_sizing_refs():
+    from dxfwrite import DXFEngine as dxf
+    from dxfwrite.const import LEFT, TOP
+
+    d.dwg.add(dxf.rectangle(
+        insert=(part_padding, -part_padding - 10.0),
+        width=10.0,
+        height=10.0,
+        layer="LABELS",
+    ))
+    d.dwg.add(dxf.text(
+        "10mm ref.",
+        halign=LEFT,
+        valign=TOP,
+        alignpoint=((part_padding * 2.0) + 10.0, -part_padding),
+        height=5,
+        layer="LABELS",
+    ))
+
+    inch = 25.4
+
+    d.dwg.add(dxf.rectangle(
+        insert=(part_padding, -part_padding - 40.4),
+        width=inch,
+        height=inch,
+        layer="LABELS",
+    ))
+    d.dwg.add(dxf.text(
+        "1 inch ref. (%0.2fmm)" % inch,
+        halign=LEFT,
+        valign=TOP,
+        alignpoint=((part_padding * 2.0) + inch, -part_padding - 40.4 + inch),
+        height=5,
+        layer="LABELS",
+    ))
+    d.dwg.add(dxf.text(
+        "(10mm ref. is authoritative)",
+        halign=LEFT,
+        valign=TOP,
+        alignpoint=((part_padding * 2.0) + inch, -part_padding - 40.4 + (inch / 2)),
+        height=5,
         layer="LABELS",
     ))
 
 
 vert.x = part_padding
 vert.y = part_padding
-y_axis_label(vert.y, "Vertical Inner / Silver Mirror / n copies")
+y_axis_label(vert.y, "Vertical Inner Wall | Silver Mirror | %i copies" % (cells_horiz + 1))
 draw_vert(vert)
 
 vert_edge.x = part_padding
 vert_edge.y = part_padding * 2 + height + base_thickness
+y_axis_label(vert_edge.y, "Vertical Outer Wall | Black | 2 copies")
 draw_vert_edge(vert_edge)
 
 horiz.x = part_padding
 horiz.y = (part_padding * 3) + (height * 2) + (base_thickness * 2) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
+y_axis_label(horiz.y, "Horizontal Inner Wall | Silver Mirror | %i copies" % (cells_vert + 1))
 draw_horiz(horiz)
 
 horiz_edge_bottom.x = part_padding
 horiz_edge_bottom.y = (part_padding * 4) + (height * 3) + (base_thickness * 3) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
+y_axis_label(horiz_edge_bottom.y, "Bottom Outer Wall | Black | 1 copy")
 draw_horiz_edge(horiz_edge_bottom, 0, True)
 
 horiz_edge_top.x = part_padding
 horiz_edge_top.y = (part_padding * 5) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness
+y_axis_label(horiz_edge_top.y, "Top Outer Wall | Black | 1 copy")
 draw_horiz_edge(horiz_edge_top, 1, False)
 
 base.x = part_padding
 base.y = (part_padding * 6) + (height * 5) + (base_thickness * 5) + (screen_thickness * 3) + (frame_thickness * 3) + fastener_tab_thickness + fastener_bracket_thickness
+y_axis_label(base.y, "Base | Silver Mirror | 1 copy")
 draw_base(base)
 
 screen.x = part_padding
 screen.y = (part_padding * 8) + (height * 5) + (base_thickness * 5) + (screen_thickness * 3) + (frame_thickness * 3) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2))
+y_axis_label(screen.y, "Screen | Translucent White | 1 copy")
 draw_screen(screen)
 
 fasten_tab.x = (part_padding * 4) + (wall_thickness) + (cell_pitch * (cells_vert + 2))
 fasten_tab.y = part_padding
+x_axis_label(fasten_tab.x, "Fastening Tab | Black | 2 copies")
 draw_fasten_tab(fasten_tab)
 
 frame.x = part_padding
 frame.y = (part_padding * 10) + (height * 5) + (base_thickness * 5) + (screen_thickness * 3) + (frame_thickness * 3) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2) * 2)
+y_axis_label(frame.y, "Frame | Black | 1 copy")
 draw_frame(frame)
+
+draw_sizing_refs()
 
 d.save("schematic.dxf")
