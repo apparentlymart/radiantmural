@@ -209,7 +209,7 @@ def draw_horiz(horiz):
     horiz.south(height / 2.0)
 
 
-def draw_horiz_edge_bottom(part):
+def draw_horiz_edge(part, mod, holes=False):
     cell_flush_bottom = (
         cell_pitch
         - wall_thickness # slit for the perpendicular wall
@@ -234,7 +234,7 @@ def draw_horiz_edge_bottom(part):
         part.east(mitre_width)
         part.north(base_thickness)
         part.east(cell_flush_bottom / 2.0)
-        if (i % 2 == 0) or (i == cells_horiz + 1):
+        if (i % 2 == mod) or (i == cells_horiz + 1):
             part.north(height / 2.0)
             end_up = True
         else:
@@ -259,17 +259,18 @@ def draw_horiz_edge_bottom(part):
     part.south(height / 2.0)
 
     # Power jack hole
-    part.move((cell_pitch * 6.0) + (wall_thickness / 2.0), (power_jack_diameter / 2.0))
-    part.curve_ne_cw(power_jack_diameter / 2.0)
-    part.curve_se_cw(power_jack_diameter / 2.0)
-    part.curve_sw_cw(power_jack_diameter / 2.0)
-    part.curve_nw_cw(power_jack_diameter / 2.0)
-    part.move(0, -power_jack_diameter / 2.0)
-    part.move(-cell_pitch * 4.0, mic_diameter / 2.0)
-    part.curve_ne_cw(mic_diameter / 2.0)
-    part.curve_se_cw(mic_diameter / 2.0)
-    part.curve_sw_cw(mic_diameter / 2.0)
-    part.curve_nw_cw(mic_diameter / 2.0)
+    if holes:
+        part.move((cell_pitch * 6.0) + (wall_thickness / 2.0), (power_jack_diameter / 2.0))
+        part.curve_ne_cw(power_jack_diameter / 2.0)
+        part.curve_se_cw(power_jack_diameter / 2.0)
+        part.curve_sw_cw(power_jack_diameter / 2.0)
+        part.curve_nw_cw(power_jack_diameter / 2.0)
+        part.move(0, -power_jack_diameter / 2.0)
+        part.move(-cell_pitch * 4.0, mic_diameter / 2.0)
+        part.curve_ne_cw(mic_diameter / 2.0)
+        part.curve_se_cw(mic_diameter / 2.0)
+        part.curve_sw_cw(mic_diameter / 2.0)
+        part.curve_nw_cw(mic_diameter / 2.0)
 
 
 def draw_screen(part):
@@ -468,11 +469,11 @@ draw_horiz(horiz)
 
 horiz_edge_bottom.x = part_padding
 horiz_edge_bottom.y = (part_padding * 4) + (height * 3) + (base_thickness * 3) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
-draw_horiz_edge_bottom(horiz_edge_bottom)
+draw_horiz_edge(horiz_edge_bottom, 0, True)
 
 horiz_edge_top.x = part_padding
 horiz_edge_top.y = (part_padding * 5) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness
-draw_horiz_edge_bottom(horiz_edge_top)
+draw_horiz_edge(horiz_edge_top, 1, False)
 
 base.x = part_padding
 base.y = (part_padding * 6) + (height * 5) + (base_thickness * 5) + (screen_thickness * 3) + (frame_thickness * 3) + fastener_tab_thickness + fastener_bracket_thickness
