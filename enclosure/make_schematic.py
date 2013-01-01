@@ -393,10 +393,10 @@ def draw_frame(part):
     origin_x = part.x
     origin_y = part.y
 
-    straight_across_outer = ((cells_horiz + 2) * cell_pitch) + (frame_lip * 2) - (frame_lip_curve_radius * 2)
-    straight_down_outer = ((cells_vert + 2) * cell_pitch) + (frame_lip * 2) - (frame_lip_curve_radius * 2)
+    straight_across_outer = ((cells_horiz + 2.0) * cell_pitch) + (frame_lip * 2.0) - (frame_lip_curve_radius * 2.0) + wall_thickness
+    straight_down_outer = ((cells_vert + 2.0) * cell_pitch) + (frame_lip * 2.0) - (frame_lip_curve_radius * 2.0) + wall_thickness
     straight_across_inner = (cells_horiz * cell_pitch) - (frame_lip_curve_radius * 2)
-    straight_down_inner = (cells_vert * cell_pitch) - (frame_lip_curve_radius * 2)
+    straight_down_inner = (cells_vert * cell_pitch) - (frame_lip_curve_radius * 2.0)
 
     part.move(0, frame_lip_curve_radius)
     part.curve_sw_ccw(frame_lip_curve_radius)
@@ -424,6 +424,34 @@ def draw_frame(part):
     part.west(straight_across_inner)
     part.curve_nw_ccw(frame_lip_curve_radius)
     part.south(straight_down_inner)
+
+    between_hole_length = cell_pitch - mitre_hole_width
+
+    part.x = origin_x + frame_lip
+    part.y = origin_y + frame_lip
+
+    counts_dirs = [
+        (part.east, part.north, cells_horiz + 2),
+        (part.north, part.west, cells_vert + 2),
+        (part.west, part.south, cells_horiz + 2),
+        (part.south, part.east, cells_vert + 2),
+    ]
+
+    for along, inward, count in counts_dirs:
+        part.pen_up()
+        along(wall_thickness / 2.0)
+        for i in xrange(0, count):
+            along(between_hole_length / 2.0)
+            part.pen_down()
+            inward(wall_thickness)
+            along(mitre_hole_width)
+            inward(-wall_thickness)
+            along(-mitre_hole_width)
+            part.pen_up()
+            along((between_hole_length / 2.0) + mitre_hole_width)
+        along(wall_thickness / 2.0)
+        part.pen_down()
+
 
 vert.x = part_padding
 vert.y = part_padding
