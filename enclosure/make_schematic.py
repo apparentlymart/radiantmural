@@ -16,6 +16,7 @@ part_padding = 5.0
 fastener_bracket_curve_radius = 2
 fastener_tab_thickness = 3.5
 fastener_tab_width = 11.0
+fastener_tab_curve_radius = 2
 fastener_bracket_thickness = (cell_pitch - fastener_tab_width - wall_thickness) / 2
 fastener_mitre_width = fastener_tab_width + (fastener_bracket_thickness * 2)
 power_jack_diameter = 13.5
@@ -44,6 +45,7 @@ vert_edge = d.add_layer("VERT_EDGE")
 horiz_edge = d.add_layer("HORIZ_EDGE")
 base = d.add_layer("BASE")
 screen = d.add_layer("SCREEN")
+fasten_tab = d.add_layer("FASTEN_TAB")
 
 def draw_vert(vert):
     cell_flush_bottom = (
@@ -361,6 +363,28 @@ def draw_base(part):
             part.west(wall_thickness)
 
 
+def draw_fasten_tab(part):
+
+    fastener_tab_handle_height = cell_pitch * 0.75
+    fastener_tab_handle_width = fastener_tab_width * 3.0
+    fastener_tab_length = (cell_pitch * cells_vert) + fastener_tab_curve_radius
+
+    part.move(0, fastener_tab_curve_radius)
+    part.curve_sw_ccw(fastener_tab_curve_radius)
+    part.east(fastener_tab_handle_height - (fastener_tab_curve_radius * 2.0))
+    part.curve_se_ccw(fastener_tab_curve_radius)
+    part.north(((fastener_tab_handle_width - fastener_tab_width) / 2.0) - fastener_tab_curve_radius)
+    part.east(fastener_tab_length)
+    part.curve_se_ccw(fastener_tab_curve_radius)
+    part.north(fastener_tab_width - (fastener_tab_curve_radius * 2.0))
+    part.curve_ne_ccw(fastener_tab_curve_radius)
+    part.west(fastener_tab_length)
+    part.north(((fastener_tab_handle_width - fastener_tab_width) / 2.0) - fastener_tab_curve_radius)
+    part.curve_ne_ccw(fastener_tab_curve_radius)
+    part.west(fastener_tab_handle_height - (fastener_tab_curve_radius * 2.0))
+    part.curve_nw_ccw(fastener_tab_curve_radius)
+    part.south(fastener_tab_handle_width - (fastener_tab_curve_radius * 2.0))
+
 vert.x = part_padding
 vert.y = part_padding
 draw_vert(vert)
@@ -384,5 +408,9 @@ draw_base(base)
 screen.x = part_padding
 screen.y = (part_padding * 7) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2))
 draw_screen(screen)
+
+fasten_tab.x = (part_padding * 4) + (wall_thickness) + (cell_pitch * (cells_vert + 2))
+fasten_tab.y = part_padding
+draw_fasten_tab(fasten_tab)
 
 d.save("schematic.dxf")
