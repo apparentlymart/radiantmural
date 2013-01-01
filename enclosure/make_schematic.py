@@ -44,7 +44,8 @@ d = Drawing()
 vert = d.add_layer("VERT")
 horiz = d.add_layer("HORIZ")
 vert_edge = d.add_layer("VERT_EDGE")
-horiz_edge = d.add_layer("HORIZ_EDGE")
+horiz_edge_bottom = d.add_layer("HORIZ_EDGE_BOTTOM")
+horiz_edge_top = d.add_layer("HORIZ_EDGE_TOP")
 base = d.add_layer("BASE")
 screen = d.add_layer("SCREEN")
 fasten_tab = d.add_layer("FASTEN_TAB")
@@ -208,7 +209,7 @@ def draw_horiz(horiz):
     horiz.south(height / 2.0)
 
 
-def draw_horiz_edge(part):
+def draw_horiz_edge_bottom(part):
     cell_flush_bottom = (
         cell_pitch
         - wall_thickness # slit for the perpendicular wall
@@ -465,16 +466,20 @@ horiz.x = part_padding
 horiz.y = (part_padding * 3) + (height * 2) + (base_thickness * 2) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
 draw_horiz(horiz)
 
-horiz_edge.x = part_padding
-horiz_edge.y = (part_padding * 4) + (height * 3) + (base_thickness * 3) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
-draw_horiz_edge(horiz_edge)
+horiz_edge_bottom.x = part_padding
+horiz_edge_bottom.y = (part_padding * 4) + (height * 3) + (base_thickness * 3) + screen_thickness + frame_thickness + fastener_tab_thickness + fastener_bracket_thickness
+draw_horiz_edge_bottom(horiz_edge_bottom)
+
+horiz_edge_top.x = part_padding
+horiz_edge_top.y = (part_padding * 5) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness
+draw_horiz_edge_bottom(horiz_edge_top)
 
 base.x = part_padding
-base.y = (part_padding * 5) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness
+base.y = (part_padding * 6) + (height * 5) + (base_thickness * 5) + (screen_thickness * 3) + (frame_thickness * 3) + fastener_tab_thickness + fastener_bracket_thickness
 draw_base(base)
 
 screen.x = part_padding
-screen.y = (part_padding * 7) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2))
+screen.y = (part_padding * 8) + (height * 5) + (base_thickness * 5) + (screen_thickness * 3) + (frame_thickness * 3) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2))
 draw_screen(screen)
 
 fasten_tab.x = (part_padding * 4) + (wall_thickness) + (cell_pitch * (cells_vert + 2))
@@ -482,7 +487,7 @@ fasten_tab.y = part_padding
 draw_fasten_tab(fasten_tab)
 
 frame.x = part_padding
-frame.y = (part_padding * 9) + (height * 4) + (base_thickness * 4) + (screen_thickness * 2) + (frame_thickness * 2) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2) * 2)
+frame.y = (part_padding * 10) + (height * 5) + (base_thickness * 5) + (screen_thickness * 3) + (frame_thickness * 3) + fastener_tab_thickness + fastener_bracket_thickness + (cell_pitch * (cells_vert + 2) * 2)
 draw_frame(frame)
 
 d.save("schematic.dxf")
