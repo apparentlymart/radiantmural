@@ -455,8 +455,24 @@ def draw_frame(part):
         part.pen_down()
 
 
+def y_axis_label(y, text):
+    # Cheat a bit here since cadoodle doesn't yet have support for
+    # drawing text labels.
+    from dxfwrite import DXFEngine as dxf
+    from dxfwrite.const import RIGHT, BOTTOM
+    d.dwg.add(dxf.text(
+        text,
+        halign=RIGHT,
+        valign=BOTTOM,
+        alignpoint=(-part_padding, y + part_padding),
+        height=10,
+        layer="LABELS",
+    ))
+
+
 vert.x = part_padding
 vert.y = part_padding
+y_axis_label(vert.y, "Vertical Inner / Silver Mirror / n copies")
 draw_vert(vert)
 
 vert_edge.x = part_padding
