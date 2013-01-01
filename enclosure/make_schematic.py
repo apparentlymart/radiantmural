@@ -379,14 +379,14 @@ def draw_fasten_tab(part):
     part.north(((fastener_tab_handle_width - fastener_tab_width) / 2.0) - fastener_tab_curve_radius)
     part.east(fastener_tab_length)
     part.curve_se_ccw(fastener_tab_curve_radius)
-    part.north(fastener_tab_width - (fastener_tab_curve_radius * 2.0))
+    part.north(fastener_tab_width - (fastener_tab_curve_radius * 2.0) - mitre_tolerance)
     part.curve_ne_ccw(fastener_tab_curve_radius)
     part.west(fastener_tab_length)
     part.north(((fastener_tab_handle_width - fastener_tab_width) / 2.0) - fastener_tab_curve_radius)
     part.curve_ne_ccw(fastener_tab_curve_radius)
     part.west(fastener_tab_handle_height - (fastener_tab_curve_radius * 2.0))
     part.curve_nw_ccw(fastener_tab_curve_radius)
-    part.south(fastener_tab_handle_width - (fastener_tab_curve_radius * 2.0))
+    part.south(fastener_tab_handle_width - (fastener_tab_curve_radius * 2.0) - mitre_tolerance)
 
 
 def draw_frame(part):
