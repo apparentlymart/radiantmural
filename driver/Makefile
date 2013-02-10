@@ -7,6 +7,7 @@ ALAMBRE_ROOT_DIR:=extlib/alambre
 ALAMBRE_BUILD_ARGS:=
 ALAMBRE_TARGET_DIR:=
 CXX_OPTS:=-std=gnu++0x
+LINK_OPTS:=
 ifndef TARGET
 	TARGET:=dummy
 endif
@@ -19,6 +20,8 @@ else
 	ifeq ($(TARGET),dummy)
 		ALAMBRE_BUILD_ARGS += SDL_DUMMIES=1
 		ALAMBRE_TARGET := $(shell $(CXX) -dumpmachine)
+	    CXX_OPTS:=$(shell sdl-config --cflags)
+	    LINK_OPTS:=$(shell sdl-config --libs)
 	else
 		ERR:=$(error Unsupported target $(TARGET))
 	endif
@@ -26,7 +29,7 @@ endif
 OBJ_DIR:=obj/$(TARGET)
 ALAMBRE_LIB=$(ALAMBRE_ROOT_DIR)/lib/$(ALAMBRE_TARGET)/libalambre.a
 ALAMBRE_INCLUDE_DIR=$(ALAMBRE_ROOT_DIR)/include
-CXX_OPTS += -I$(ALAMBRE_INCLUDE_DIR) -DRADIANTMURAL_TARGET=$(TARGET)
+CXX_OPTS += -I$(ALAMBRE_INCLUDE_DIR) -DRADIANTMURAL_TARGET_$(TARGET) -DRADIANTMURAL_TARGET=$(TARGET)
 GCC_MACHINE := $(shell $(CXX) -dumpmachine)
 TARGET_DIR := bin/$(TARGET)
 TARGET_EXEC := $(TARGET_DIR)/radiantmural
@@ -39,9 +42,9 @@ OBJ_FILES:=$(patsubst src/%.cpp,$(OBJ_DIR)/%.o,$(SOURCE_FILES))
 all: $(TARGET_EXEC)
 
 $(TARGET_EXEC): $(OBJ_FILES) $(ALAMBRE_LIB) $(TARGET_DIR)
-	$(CXX) -O3 $(CXX_OPTS) $(OBJ_FILES) $(ALAMBRE_LIB) -o $(TARGET_EXEC)
+	$(CXX) -O3 $(CXX_OPTS) $(OBJ_FILES) $(ALAMBRE_LIB) $(LINK_OPTS) -o $(TARGET_EXEC)
 
-$(OBJ_DIR)/%.o: src/%.cpp $(OBJ_DIR) $(HEADER_FILES)
+$(OBJ_DIR)/%.o: src/%.cpp $(ALAMBRE_INCLUDE_DIR) $(OBJ_DIR) $(HEADER_FILES)
 	@mkdir -p $(@D)
 	$(CXX) -I$(INCLUDE_DIR) -O3 $(CXX_OPTS) -c $< -o $@
 
