@@ -16,6 +16,7 @@ ifeq ($(TARGET),arduino_uno)
 	ALAMBRE_BUILD_ARGS += GNU_TOOLS_PREFIX=avr- MCU=atmega328p
 	ALAMBRE_TARGET := avr-atmega328p
 	UPLOAD_MECHANISM := avrdude
+	CXX_OPTS += -mmcu=atmega328p
 else
 	ifeq ($(TARGET),dummy)
 		ALAMBRE_BUILD_ARGS += SDL_DUMMIES=1
