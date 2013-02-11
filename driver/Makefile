@@ -21,8 +21,8 @@ else
 	ifeq ($(TARGET),dummy)
 		ALAMBRE_BUILD_ARGS += SDL_DUMMIES=1
 		ALAMBRE_TARGET := $(shell $(CXX) -dumpmachine)
-	    CXX_OPTS:=$(shell sdl-config --cflags)
-	    LINK_OPTS:=$(shell sdl-config --libs)
+	    CXX_OPTS+=$(shell sdl-config --cflags)
+	    LINK_OPTS+=$(shell sdl-config --libs)
 	else
 		ERR:=$(error Unsupported target $(TARGET))
 	endif
