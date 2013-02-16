@@ -1,5 +1,6 @@
 
 #include "gameoflife.h"
+#include <stdint.h>
 
 // Target-specific wiring code
 #ifdef RADIANTMURAL_TARGET_arduino_uno
@@ -7,15 +8,40 @@
     #include <alambre/system/avr.h>
     #include <alambre/capability/1dgraphics.h>
     #include <alambre/device/lpd8806.h>
+    #include <avr/sleep.h>
+    #include <avr/interrupt.h>
     #include "ledmatrix.h"
+
+    volatile uint8_t redraw = 0;
+
+    ISR(TIMER1_OVF_vect) {
+        redraw = 1;
+    }
 
     Lpd8806Device<typeof(*avr_system.spi_bus)> strip_device(avr_system.spi_bus);
     Lpd8806Buffered1dGraphicsSurface<typeof(strip_device), 161> strip(&strip_device);
     RadiantMuralZigZagBuffered2dTo1dGraphicsSurfaceAdapter<typeof(strip)> surface(&strip);
+    GameOfLife<typeof(surface), 24, 7> game_of_life(&surface);
 
     inline void main_loop() {
-        // TODO: Put the AVR to sleep, rather than busy-looping
-        while (1) {}
+        // Enable the overflow interrupt.
+        TIMSK1 |= (1 << TOIE1);
+
+        // Start timer at Fcpu/8
+        TCCR1B |= (1 << CS11);
+
+        while (1) {
+            sleep_enable();
+            set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+            sei();
+            sleep_cpu();
+            sleep_disable();
+            cli();
+            if (redraw) {
+                game_of_life.next_frame();
+                redraw = 0;
+            }
+        }
     }
 
 #elif RADIANTMURAL_TARGET_dummy
