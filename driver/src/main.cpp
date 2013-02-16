@@ -1,4 +1,6 @@
 
+#include "gameoflife.h"
+
 // Target-specific wiring code
 #ifdef RADIANTMURAL_TARGET_arduino_uno
 
@@ -21,13 +23,40 @@
     #include <alambre/system/sdl/2dgraphics.h>
 
     WindowedSdl2dGraphicsSurface<24, 7, 10> surface;
+    GameOfLife<typeof(surface), 24, 7> game_of_life(&surface);
+
+    Uint32 timer_func(Uint32 interval, void *param) {
+        // Just generate a dummy event so our mainloop
+        // will wake up periodically to process this nonsense message.
+        SDL_Event event;
+        SDL_UserEvent userevent;
+        event.type = SDL_USEREVENT;
+        event.user = userevent;
+        userevent.type = SDL_USEREVENT;
+        userevent.code = 0;
+        userevent.data1 = NULL;
+        userevent.data2 = NULL;
+        event.user = userevent;
+        SDL_PushEvent(&event);
+        return interval;
+    }
 
     inline void main_loop() {
         SDL_Event event;
 
+        SDL_Init(SDL_INIT_EVERYTHING);
+
+        SDL_TimerID timerid = SDL_AddTimer(200, timer_func, NULL);
+        if (timerid == NULL) {
+            printf("Failed to timer: %s\n", SDL_GetError());
+        }
+
         while (SDL_WaitEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 break;
+            }
+            else if (event.type == SDL_USEREVENT) {
+                game_of_life.next_frame();
             }
         }
     }
@@ -67,6 +96,16 @@ int main() {
     surface.set_pixel(4, 6, white);
 
     surface.flip(0, 0, 23, 6);
+
+    game_of_life.set_pixel(3, 1);
+    game_of_life.set_pixel(4, 1);
+    game_of_life.set_pixel(5, 1);
+
+    game_of_life.set_pixel(12, 4);
+    game_of_life.set_pixel(12, 5);
+    game_of_life.set_pixel(12, 6);
+    game_of_life.set_pixel(11, 6);
+    game_of_life.set_pixel(10, 5);
 
     main_loop();
 
