@@ -72,7 +72,7 @@ class GameOfLife {
                 bitmap->set_pixel(x, y, get_pixel(x, y) ? white : black);
             }
         }
-        display->update(bitmap);
+        //display->update(bitmap);
     }
 
     inline uint8_t get_pixel(coord_type x, coord_type y) {

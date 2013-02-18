@@ -2,11 +2,26 @@
 #include "gameoflife.h"
 #include <stdint.h>
 
+#define F_CPU 14745600L
+#include <util/delay.h>
+
 // Target-specific wiring code
 #ifdef RADIANTMURAL_TARGET_arduino_uno
 
+    // For some reason these are not defined for atmega328p
+    #define MOSI_DDR DDRB
+    #define MOSI_PORT PORTB
+    #define MOSI_PIN PINB
+    #define MOSI_BIT 3
+    #define SCK_DDR DDRB
+    #define SCK_PORT PORTB
+    #define SCK_PIN PINB
+    #define SCK_BIT 5
+
     #include <alambre/system/avr.h>
+    #include <alambre/bus/spi.h>
     #include <alambre/capability/1dgraphics.h>
+    #include <alambre/capability/2dgraphics.h>
     #include <alambre/device/lpd8806.h>
     #include <avr/sleep.h>
     #include <avr/interrupt.h>
@@ -18,10 +33,16 @@
         redraw = 1;
     }
 
-    Lpd8806Device<typeof(*avr_system.spi_bus)> strip_device(avr_system.spi_bus);
-    Lpd8806Buffered1dGraphicsSurface<typeof(strip_device), 161> strip(&strip_device);
-    RadiantMuralZigZagBuffered2dTo1dGraphicsSurfaceAdapter<typeof(strip)> surface(&strip);
-    GameOfLife<typeof(surface), 24, 7> game_of_life(&surface);
+SoftwareSpiMasterOutputBus <typeof(*avr_system.B3), typeof(*avr_system.B5)> spi_bus(avr_system.B3, avr_system.B5);
+Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
+//Lpd8806Device<typeof(*avr_system.spi_bus)> strip_device(avr_system.spi_bus);
+    typedef typeof(strip_device) strip_device_type;
+
+    Bitmap1d<unsigned int, strip_device_type::raw_color, 161> bitmap1d;
+    Lpd8806Bitmap1dDisplay<typeof(bitmap1d), strip_device_type, 161> display(&strip_device);
+    RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter<typeof(bitmap1d)> bitmap(&bitmap1d);
+    GameOfLife<typeof(bitmap), typeof(display), 24, 7> game_of_life(&bitmap, &display);
+    auto white = strip_device.get_closest_color(255, 255, 255);
 
     inline void main_loop() {
         // Enable the overflow interrupt.
@@ -31,14 +52,17 @@
         TCCR1B |= (1 << CS11);
 
         while (1) {
-            sleep_enable();
+            /*sleep_enable();
             set_sleep_mode(SLEEP_MODE_PWR_SAVE);
             sei();
             sleep_cpu();
             sleep_disable();
-            cli();
+            cli();*/
+            redraw = 1;
+            _delay_ms(1000);
             if (redraw) {
                 game_of_life.next_frame();
+                display.update(&bitmap1d);
                 redraw = 0;
             }
         }
@@ -87,6 +111,7 @@
             }
             else if (event.type == SDL_USEREVENT) {
                 game_of_life.next_frame();
+                display.update(&bitmap);
             }
         }
     }
@@ -123,7 +148,11 @@ int main() {
     bitmap.set_pixel(4, 5, white);
     bitmap.set_pixel(4, 6, white);
 
+#ifdef RADIANTMURAL_TARGET_arduino_uno
+    display.update(&bitmap1d);
+#else
     display.update(&bitmap);
+#endif
 
     game_of_life.set_pixel(3, 1);
     game_of_life.set_pixel(4, 1);

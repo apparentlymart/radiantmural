@@ -4,7 +4,7 @@
 #include <alambre/capability/1dgraphics.h>
 
 /**
- * Mapping of 2D surface onto a bizarre chopped up, zig-zagging LED strip.
+ * Mapping of 2D bitmap onto a bizarre chopped up, zig-zagging LED strip.
  *
  * This implementation of AbstractBuffered2dTo1dGraphicsSurfaceAdapter
  * maps a 24*7 2D surface onto a 1D LED strip cut into zig-zagging
@@ -24,34 +24,33 @@
  * on the row above counts in the opposite direction, and it continues
  * switching in this zig-zag pattern until it reaches the top left.
  */
-template <class BUFFERED_1D_SURFACE_TYPE>
-class RadiantMuralZigZagBuffered2dTo1dGraphicsSurfaceAdapter : public AbstractBuffered2dTo1dGraphicsSurfaceAdapter<BUFFERED_1D_SURFACE_TYPE, RadiantMuralZigZagBuffered2dTo1dGraphicsSurfaceAdapter<BUFFERED_1D_SURFACE_TYPE> > {
+template <class BITMAP1D_TYPE>
+class RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter : public AbstractMutableBitmap1dAsBitmap2dAdapter<BITMAP1D_TYPE, RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter<BITMAP1D_TYPE> > {
 
   private:
-    typedef AbstractBuffered2dTo1dGraphicsSurfaceAdapter<BUFFERED_1D_SURFACE_TYPE, RadiantMuralZigZagBuffered2dTo1dGraphicsSurfaceAdapter<BUFFERED_1D_SURFACE_TYPE> > base_type;
+    typedef AbstractMutableBitmap1dAsBitmap2dAdapter<BITMAP1D_TYPE, RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter<BITMAP1D_TYPE> > base_type;
 
   public:
 
     // Forcefully "inherit" the typedefs from our parent, because
     // typedefs don't inherit automatically in C++.
-    typedef typename base_type::inner_surface_type inner_surface_type;
     typedef typename base_type::index_type index_type;
     typedef typename base_type::coord_type coord_type;
     typedef typename base_type::color_type color_type;
 
-    RadiantMuralZigZagBuffered2dTo1dGraphicsSurfaceAdapter(BUFFERED_1D_SURFACE_TYPE *inner_surface) {
-        this->inner_surface = inner_surface;
+    RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter(BITMAP1D_TYPE *bitmap1d) {
+        this->bitmap1d = bitmap1d;
     }
 
-    inline typename base_type::index_type get_width() {
+    inline index_type get_width() {
         return 24;
     }
 
-    inline typename base_type::index_type get_height() {
+    inline index_type get_height() {
         return 7;
     }
 
-    inline typename base_type::index_type map_coordinates(coord_type x, coord_type y) {
+    inline index_type map_coordinates(coord_type x, coord_type y) {
         // Our y axis is upside-down compared to what users of this
         // interface expect, so we invert the y coord.
         y = 6 - y;
