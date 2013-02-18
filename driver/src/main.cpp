@@ -60,7 +60,7 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
             sleep_disable();
             cli();*/
             redraw = 1;
-            _delay_ms(1000);
+            _delay_ms(250);
             if (redraw) {
                 game_of_life.next_frame();
                 display.update(&bitmap1d);
@@ -124,81 +124,13 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
 
 int main() {
 
-    uint8_t bri = 255;
-    int8_t bridir = -1;
-    while (1) {
-        int lasty = 6;
-        int lastx = 23;
-        for (int y = 6; y >= 0; y--) {
-            for (int x = 23; x >= 0; x--) {
-                bitmap.set_pixel(lastx, lasty, strip_device.get_closest_color(bri, 255 - bri, 0));
-                bitmap.set_pixel(x, y, white);
-                display.update(&bitmap1d);
-                _delay_ms(50);
-                lastx = x;
-                lasty = y;
-                bri += bridir;
-                if (bri == 0) bridir = 1;
-                if (bri == 255) bridir = -1;
-            }
-        }
-    }
-
-    bitmap.set_pixel(0, 0, white);
-    bitmap.set_pixel(1, 0, white);
-    bitmap.set_pixel(23, 5, white);
-
-    // Just a dummy pattern to test the wiring.
-    // TODO: Remove this and replace it with the real program.
-    bitmap.set_pixel(0, 0, white);
-    bitmap.set_pixel(0, 1, white);
-    bitmap.set_pixel(0, 2, white);
-    bitmap.set_pixel(0, 3, white);
-    bitmap.set_pixel(0, 4, white);
-    bitmap.set_pixel(0, 5, white);
-    bitmap.set_pixel(0, 6, white);
-
-    bitmap.set_pixel(1, 3, white);
-
-    bitmap.set_pixel(2, 0, white);
-    bitmap.set_pixel(2, 1, white);
-    bitmap.set_pixel(2, 2, white);
-    bitmap.set_pixel(2, 3, white);
-    bitmap.set_pixel(2, 4, white);
-    bitmap.set_pixel(2, 5, white);
-    bitmap.set_pixel(2, 6, white);
-
-    bitmap.set_pixel(4, 1, white);
-    bitmap.set_pixel(4, 3, white);
-    bitmap.set_pixel(4, 4, white);
-    bitmap.set_pixel(4, 5, white);
-    bitmap.set_pixel(4, 6, white);
-
-#ifdef RADIANTMURAL_TARGET_arduino_uno
-    display.update(&bitmap1d);
-#else
-    display.update(&bitmap);
-#endif
-
-    while(1) {}
-
-    /*SPCR = 0;
-    avr_system.B5->set_direction(IGpioPin::OUTPUT);
-
-    while (1) {
-        avr_system.B5->set();
-        _delay_ms(1000);
-        avr_system.B5->clear();
-        _delay_ms(1000);
-    }
-
-    return 0;*/
-
-    //while(1) { };
-
     game_of_life.set_pixel(3, 1);
     game_of_life.set_pixel(4, 1);
     game_of_life.set_pixel(5, 1);
+
+    game_of_life.set_pixel(8, 4);
+    game_of_life.set_pixel(8, 5);
+    game_of_life.set_pixel(8, 6);
 
     game_of_life.set_pixel(12, 4);
     game_of_life.set_pixel(12, 5);
