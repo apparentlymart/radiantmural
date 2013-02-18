@@ -58,19 +58,19 @@ class RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter : public AbstractMutabl
         if (y == 0) {
             if (x < 2 || x > 21) {
                 // One of the unaddressable pixels.
-                return 161;
+                return 160;
             }
             else {
-                return 20 - x - 2;
+                return 21 - x;
             }
         }
         else if (y == 6) {
             if (x < 2 || x > 21) {
                 // One of the unaddressable pixels.
-                return 161;
+                return 160;
             }
             else {
-                return 20 + 5*24 + 20 - x - 2;
+                return 161 - x;
             }
         }
         else {
@@ -80,7 +80,7 @@ class RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter : public AbstractMutabl
             }
             else {
                 // even row, so right-to-left
-                return 20 + y * 24 - x;
+                return 19 + y * 24 - x;
             }
         }
     }
