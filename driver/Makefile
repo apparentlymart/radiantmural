@@ -47,7 +47,7 @@ $(TARGET_EXEC): $(OBJ_FILES) $(ALAMBRE_LIB) $(TARGET_DIR)
 
 $(OBJ_DIR)/%.o: src/%.cpp $(ALAMBRE_INCLUDE_DIR) $(OBJ_DIR) $(HEADER_FILES)
 	@mkdir -p $(@D)
-	$(CXX) -I$(INCLUDE_DIR) -O3 $(CXX_OPTS) -c $< -o $@
+	$(CXX) -O3 $(CXX_OPTS) -c $< -o $@
 
 $(OBJ_DIR):
 	[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
