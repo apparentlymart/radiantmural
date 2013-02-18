@@ -2,11 +2,11 @@
 #include "gameoflife.h"
 #include <stdint.h>
 
-#define F_CPU 14745600L
-#include <util/delay.h>
-
 // Target-specific wiring code
 #ifdef RADIANTMURAL_TARGET_arduino_uno
+
+#define F_CPU 14745600L
+#include <util/delay.h>
 
     // For some reason these are not defined for atmega328p
     #define MOSI_DDR DDRB
@@ -43,6 +43,7 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
     RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter<typeof(bitmap1d)> bitmap(&bitmap1d);
     GameOfLife<typeof(bitmap), typeof(display), 24, 7> game_of_life(&bitmap, &display);
     auto white = strip_device.get_closest_color(255, 255, 255);
+    auto blue = strip_device.get_closest_color(0, 0, 127);
 
     inline void main_loop() {
         // Enable the overflow interrupt.
@@ -78,6 +79,7 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
     WindowedSdlBitmap2dDisplay<typeof(bitmap), 24, 7, 10> display;
     GameOfLife<typeof(bitmap), typeof(display), 24, 7> game_of_life(&bitmap, &display);
     auto white = display.get_closest_color(255, 255, 255);
+    auto blue = display.get_closest_color(0, 0, 127);
 
     Uint32 timer_func(Uint32 interval, void *param) {
         // Just generate a dummy event so our mainloop
@@ -122,6 +124,30 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
 
 int main() {
 
+    uint8_t bri = 255;
+    int8_t bridir = -1;
+    while (1) {
+        int lasty = 6;
+        int lastx = 23;
+        for (int y = 6; y >= 0; y--) {
+            for (int x = 23; x >= 0; x--) {
+                bitmap.set_pixel(lastx, lasty, strip_device.get_closest_color(bri, 255 - bri, 0));
+                bitmap.set_pixel(x, y, white);
+                display.update(&bitmap1d);
+                _delay_ms(50);
+                lastx = x;
+                lasty = y;
+                bri += bridir;
+                if (bri == 0) bridir = 1;
+                if (bri == 255) bridir = -1;
+            }
+        }
+    }
+
+    bitmap.set_pixel(0, 0, white);
+    bitmap.set_pixel(1, 0, white);
+    bitmap.set_pixel(23, 5, white);
+
     // Just a dummy pattern to test the wiring.
     // TODO: Remove this and replace it with the real program.
     bitmap.set_pixel(0, 0, white);
@@ -153,6 +179,22 @@ int main() {
 #else
     display.update(&bitmap);
 #endif
+
+    while(1) {}
+
+    /*SPCR = 0;
+    avr_system.B5->set_direction(IGpioPin::OUTPUT);
+
+    while (1) {
+        avr_system.B5->set();
+        _delay_ms(1000);
+        avr_system.B5->clear();
+        _delay_ms(1000);
+    }
+
+    return 0;*/
+
+    //while(1) { };
 
     game_of_life.set_pixel(3, 1);
     game_of_life.set_pixel(4, 1);
