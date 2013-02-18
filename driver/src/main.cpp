@@ -38,14 +38,44 @@
     Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
     typedef typeof(strip_device) strip_device_type;
 
-    Lpd8806Color palette[2] = {
+    Lpd8806Color palette[] = {
         Lpd8806Color::get_closest(0, 0, 0),
-        Lpd8806Color::get_closest(0, 255, 255)
+        Lpd8806Color::get_closest(0, 8, 8),
+        Lpd8806Color::get_closest(0, 16, 16),
+        Lpd8806Color::get_closest(0, 24, 24),
+        Lpd8806Color::get_closest(0, 32, 32),
+        Lpd8806Color::get_closest(0, 40, 40),
+        Lpd8806Color::get_closest(0, 48, 48),
+        Lpd8806Color::get_closest(0, 56, 56),
+        Lpd8806Color::get_closest(0, 64, 64),
+        Lpd8806Color::get_closest(0, 72, 72),
+        Lpd8806Color::get_closest(0, 80, 80),
+        Lpd8806Color::get_closest(0, 88, 88),
+        Lpd8806Color::get_closest(0, 96, 96),
+        Lpd8806Color::get_closest(0, 104, 104),
+        Lpd8806Color::get_closest(0, 112, 112),
+        Lpd8806Color::get_closest(0, 120, 120),
+        Lpd8806Color::get_closest(0, 128, 128),
+        Lpd8806Color::get_closest(0, 136, 136),
+        Lpd8806Color::get_closest(0, 144, 144),
+        Lpd8806Color::get_closest(0, 152, 152),
+        Lpd8806Color::get_closest(0, 160, 160),
+        Lpd8806Color::get_closest(0, 168, 168),
+        Lpd8806Color::get_closest(0, 176, 176),
+        Lpd8806Color::get_closest(0, 184, 184),
+        Lpd8806Color::get_closest(0, 192, 192),
+        Lpd8806Color::get_closest(0, 200, 200),
+        Lpd8806Color::get_closest(0, 208, 208),
+        Lpd8806Color::get_closest(0, 216, 216),
+        Lpd8806Color::get_closest(0, 224, 224),
+        Lpd8806Color::get_closest(0, 232, 232),
+        Lpd8806Color::get_closest(0, 240, 240),
+        Lpd8806Color::get_closest(0, 254, 254)
     };
     PaletteBitmap1d<unsigned int, strip_device_type::raw_color, 161, sizeof(palette) / sizeof(palette[0])> bitmap1d(palette);
     Lpd8806Bitmap1dDisplay<typeof(bitmap1d.render_bitmap), strip_device_type, 161> display(&strip_device);
     RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter<typeof(bitmap1d)> bitmap(&bitmap1d);
-    GameOfLife<25, 10> game_of_life;
+    GameOfLife<24, 9> game_of_life;
     GameOfLifeRenderer<typeof(game_of_life), typeof(bitmap)> renderer(&game_of_life, &bitmap);
     auto white = strip_device.get_closest_color(255, 255, 255);
     auto blue = strip_device.get_closest_color(0, 0, 127);
@@ -70,6 +100,7 @@
                 game_of_life.next_frame();
                 renderer.update();
                 display.update(&bitmap1d.render_bitmap);
+                game_of_life.set_pixel(13, 6);
                 redraw = 0;
             }
         }
@@ -82,12 +113,42 @@
 
     Uint32 palette[] = {
         0xff000000,
-        0xffffffff,
+        0xff080808,
+        0xff0f0f0f,
+        0xff181818,
+        0xff202020,
+        0xff282828,
+        0xff303030,
+        0xff383838,
+        0xff404040,
+        0xff484848,
+        0xff505050,
+        0xff585858,
+        0xff606060,
+        0xff686868,
+        0xff707070,
+        0xff787878,
+        0xff808080,
+        0xff888888,
+        0xff909090,
+        0xff989898,
+        0xffa0a0a0,
+        0xffa8a8a8,
+        0xffb0b0b0,
+        0xffb8b8b8,
+        0xffc0c0c0,
+        0xffc8c8c8,
+        0xffd0d0d0,
+        0xffd8d8d8,
+        0xffe0e0e0,
+        0xffe8e8e8,
+        0xfff0f0f0,
+        0xfff8f8f8,
     };
     PaletteBitmap2d<Uint32, Uint32, 24, 7, sizeof(palette) / sizeof(palette[0])> bitmap(palette);
 
     WindowedSdlBitmap2dDisplay<typeof(bitmap.render_bitmap), 24, 7, 10> display;
-    GameOfLife<25, 10> game_of_life;
+    GameOfLife<24, 9> game_of_life;
     GameOfLifeRenderer<typeof(game_of_life), typeof(bitmap)> renderer(&game_of_life, &bitmap);
     auto white = display.get_closest_color(255, 255, 255);
     auto blue = display.get_closest_color(0, 0, 127);
@@ -126,6 +187,7 @@
                 game_of_life.next_frame();
                 renderer.update();
                 display.update(&bitmap.render_bitmap);
+                game_of_life.set_pixel(13, 6);
             }
         }
     }

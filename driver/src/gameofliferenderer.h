@@ -17,7 +17,17 @@ class GameOfLifeRenderer {
         int width = bitmap->get_width();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                bitmap->set_pixel(x, y, game->get_pixel(x, y) ? 1 : 0);
+                uint8_t set = game->get_pixel(x, y);
+                if (set) {
+                    bitmap->set_pixel(x, y, 31);
+                }
+                else {
+                    // Decay the pixel color until we reach black.
+                    uint8_t current = bitmap->get_pixel(x, y);
+                    if (current & 0b00011111) {
+                        bitmap->set_pixel(x, y, current - 1);
+                    }
+                }
             }
         }
     }
