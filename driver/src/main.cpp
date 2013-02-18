@@ -1,5 +1,6 @@
 
 #include "gameoflife.h"
+#include "gameofliferenderer.h"
 #include <stdint.h>
 
 // Target-specific wiring code
@@ -33,15 +34,19 @@
         redraw = 1;
     }
 
-SoftwareSpiMasterOutputBus <typeof(*avr_system.B3), typeof(*avr_system.B5)> spi_bus(avr_system.B3, avr_system.B5);
-Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
-//Lpd8806Device<typeof(*avr_system.spi_bus)> strip_device(avr_system.spi_bus);
+    SoftwareSpiMasterOutputBus <typeof(*avr_system.B3), typeof(*avr_system.B5)> spi_bus(avr_system.B3, avr_system.B5);
+    Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
     typedef typeof(strip_device) strip_device_type;
 
-    Bitmap1d<unsigned int, strip_device_type::raw_color, 161> bitmap1d;
-    Lpd8806Bitmap1dDisplay<typeof(bitmap1d), strip_device_type, 161> display(&strip_device);
+    Lpd8806Color palette[2] = {
+        Lpd8806Color::get_closest(0, 0, 0),
+        Lpd8806Color::get_closest(0, 255, 255)
+    };
+    PaletteBitmap1d<unsigned int, strip_device_type::raw_color, 161, sizeof(palette) / sizeof(palette[0])> bitmap1d(palette);
+    Lpd8806Bitmap1dDisplay<typeof(bitmap1d.render_bitmap), strip_device_type, 161> display(&strip_device);
     RadiantMuralZigZagMutableBitmap1dAsBitmap2dAdapter<typeof(bitmap1d)> bitmap(&bitmap1d);
-    GameOfLife<typeof(bitmap), typeof(display), 24, 7> game_of_life(&bitmap, &display);
+    GameOfLife<25, 10> game_of_life;
+    GameOfLifeRenderer<typeof(game_of_life), typeof(bitmap)> renderer(&game_of_life, &bitmap);
     auto white = strip_device.get_closest_color(255, 255, 255);
     auto blue = strip_device.get_closest_color(0, 0, 127);
 
@@ -60,10 +65,11 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
             sleep_disable();
             cli();*/
             redraw = 1;
-            _delay_ms(250);
+            _delay_ms(150);
             if (redraw) {
                 game_of_life.next_frame();
-                display.update(&bitmap1d);
+                renderer.update();
+                display.update(&bitmap1d.render_bitmap);
                 redraw = 0;
             }
         }
@@ -74,10 +80,15 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
     #include <alambre/capability/2dgraphics.h>
     #include <alambre/system/sdl/2dgraphics.h>
 
-    Bitmap2d<Uint32, Uint32, 24, 7> bitmap;
+    Uint32 palette[] = {
+        0xff000000,
+        0xffffffff,
+    };
+    PaletteBitmap2d<Uint32, Uint32, 24, 7, sizeof(palette) / sizeof(palette[0])> bitmap(palette);
 
-    WindowedSdlBitmap2dDisplay<typeof(bitmap), 24, 7, 10> display;
-    GameOfLife<typeof(bitmap), typeof(display), 24, 7> game_of_life(&bitmap, &display);
+    WindowedSdlBitmap2dDisplay<typeof(bitmap.render_bitmap), 24, 7, 10> display;
+    GameOfLife<25, 10> game_of_life;
+    GameOfLifeRenderer<typeof(game_of_life), typeof(bitmap)> renderer(&game_of_life, &bitmap);
     auto white = display.get_closest_color(255, 255, 255);
     auto blue = display.get_closest_color(0, 0, 127);
 
@@ -113,7 +124,8 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
             }
             else if (event.type == SDL_USEREVENT) {
                 game_of_life.next_frame();
-                display.update(&bitmap);
+                renderer.update();
+                display.update(&bitmap.render_bitmap);
             }
         }
     }
@@ -124,19 +136,21 @@ Lpd8806Device<typeof(spi_bus)> strip_device(&spi_bus);
 
 int main() {
 
-    game_of_life.set_pixel(3, 1);
+    /*game_of_life.set_pixel(3, 1);
     game_of_life.set_pixel(4, 1);
-    game_of_life.set_pixel(5, 1);
+    game_of_life.set_pixel(5, 1);*/
 
     game_of_life.set_pixel(8, 4);
     game_of_life.set_pixel(8, 5);
     game_of_life.set_pixel(8, 6);
+    game_of_life.set_pixel(9, 4);
+    game_of_life.set_pixel(7, 5);
 
-    game_of_life.set_pixel(12, 4);
+    /*game_of_life.set_pixel(12, 4);
     game_of_life.set_pixel(12, 5);
     game_of_life.set_pixel(12, 6);
     game_of_life.set_pixel(11, 6);
-    game_of_life.set_pixel(10, 5);
+    game_of_life.set_pixel(10, 5);*/
 
     main_loop();
 

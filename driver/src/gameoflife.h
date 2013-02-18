@@ -5,25 +5,17 @@
 #include <stdio.h>
 #include <string.h>
 
-template <class BITMAP_TYPE, class DISPLAY_TYPE, unsigned int WIDTH, unsigned int HEIGHT>
+template <uint8_t WIDTH, uint8_t HEIGHT>
 class GameOfLife {
 
-    BITMAP_TYPE *bitmap;
-    DISPLAY_TYPE *display;
     uint8_t world[2][HEIGHT][WIDTH];
     uint8_t current_world;
     uint8_t next_world;
-    typename BITMAP_TYPE::color_type white;
-    typename BITMAP_TYPE::color_type black;
-    typedef typename BITMAP_TYPE::coord_type coord_type;
+    typedef uint8_t coord_type;
 
   public:
 
-    GameOfLife(BITMAP_TYPE *bitmap, DISPLAY_TYPE *display) {
-        this->bitmap = bitmap;
-        this->display = display;
-        this->white = display->get_closest_color(255, 255, 255);
-        this->black = display->get_closest_color(0, 0, 0);
+    GameOfLife() {
         this->current_world = 0;
         this->next_world = 1;
         memset(&world, 0, sizeof(world));
@@ -65,14 +57,6 @@ class GameOfLife {
         next_world = next_world ^ current_world;
         current_world = next_world ^ current_world;
         next_world = next_world ^ current_world;
-
-        // Update the visible bitmap
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
-                bitmap->set_pixel(x, y, get_pixel(x, y) ? white : black);
-            }
-        }
-        //display->update(bitmap);
     }
 
     inline uint8_t get_pixel(coord_type x, coord_type y) {
