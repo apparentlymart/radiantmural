@@ -47,38 +47,38 @@
     typedef typeof(strip_device) strip_device_type;
 
     Lpd8806Color palette[] = {
-        Lpd8806Color::get_closest(0, 0, 127),
-        Lpd8806Color::get_closest(0, 8, 127),
-        Lpd8806Color::get_closest(0, 16, 127),
-        Lpd8806Color::get_closest(0, 24, 127),
-        Lpd8806Color::get_closest(0, 32, 127),
-        Lpd8806Color::get_closest(0, 40, 127),
-        Lpd8806Color::get_closest(0, 48, 127),
-        Lpd8806Color::get_closest(0, 56, 127),
-        Lpd8806Color::get_closest(0, 64, 127),
-        Lpd8806Color::get_closest(0, 72, 127),
-        Lpd8806Color::get_closest(0, 80, 127),
-        Lpd8806Color::get_closest(0, 88, 127),
-        Lpd8806Color::get_closest(0, 96, 127),
-        Lpd8806Color::get_closest(0, 104, 127),
-        Lpd8806Color::get_closest(0, 112, 127),
-        Lpd8806Color::get_closest(0, 120, 127),
-        Lpd8806Color::get_closest(0, 128, 127),
-        Lpd8806Color::get_closest(0, 136, 127),
-        Lpd8806Color::get_closest(0, 144, 127),
-        Lpd8806Color::get_closest(0, 152, 127),
-        Lpd8806Color::get_closest(0, 160, 127),
-        Lpd8806Color::get_closest(0, 168, 127),
-        Lpd8806Color::get_closest(0, 176, 127),
-        Lpd8806Color::get_closest(0, 184, 127),
-        Lpd8806Color::get_closest(0, 192, 127),
-        Lpd8806Color::get_closest(0, 200, 127),
-        Lpd8806Color::get_closest(0, 208, 127),
-        Lpd8806Color::get_closest(0, 216, 127),
-        Lpd8806Color::get_closest(0, 224, 127),
-        Lpd8806Color::get_closest(0, 232, 127),
-        Lpd8806Color::get_closest(0, 240, 127),
-        Lpd8806Color::get_closest(0, 254, 127)
+        Lpd8806Color::get_closest(0, 0, 48),
+        Lpd8806Color::get_closest(0, 0, 48),
+        Lpd8806Color::get_closest(0, 0, 48),
+        Lpd8806Color::get_closest(0, 0, 48),
+        Lpd8806Color::get_closest(0, 0, 48),
+        Lpd8806Color::get_closest(0, 0, 48),
+        Lpd8806Color::get_closest(0, 0, 48),
+        Lpd8806Color::get_closest(0, 0, 56),
+        Lpd8806Color::get_closest(0, 0, 64),
+        Lpd8806Color::get_closest(0, 0, 72),
+        Lpd8806Color::get_closest(0, 0, 80),
+        Lpd8806Color::get_closest(0, 0, 88),
+        Lpd8806Color::get_closest(0, 0, 96),
+        Lpd8806Color::get_closest(0, 0, 104),
+        Lpd8806Color::get_closest(0, 0, 112),
+        Lpd8806Color::get_closest(0, 0, 120),
+        Lpd8806Color::get_closest(0, 0, 128),
+        Lpd8806Color::get_closest(0, 0, 136),
+        Lpd8806Color::get_closest(0, 0, 144),
+        Lpd8806Color::get_closest(0, 0, 152),
+        Lpd8806Color::get_closest(0, 0, 160),
+        Lpd8806Color::get_closest(0, 0, 168),
+        Lpd8806Color::get_closest(0, 0, 176),
+        Lpd8806Color::get_closest(0, 0, 184),
+        Lpd8806Color::get_closest(0, 0, 192),
+        Lpd8806Color::get_closest(0, 0, 200),
+        Lpd8806Color::get_closest(0, 0, 208),
+        Lpd8806Color::get_closest(0, 0, 216),
+        Lpd8806Color::get_closest(0, 0, 224),
+        Lpd8806Color::get_closest(0, 0, 232),
+        Lpd8806Color::get_closest(0, 0, 240),
+        Lpd8806Color::get_closest(0, 0, 254)
     };
     PaletteBitmap1d<unsigned int, strip_device_type::raw_color, 161, sizeof(palette) / sizeof(palette[0])> bitmap1d(palette);
     Lpd8806Bitmap1dDisplay<typeof(bitmap1d.render_bitmap), strip_device_type, 161> display(&strip_device);
@@ -185,7 +185,7 @@
     GameOfLife<24, 9> game_of_life;
     GameOfLifeRenderer<typeof(game_of_life), typeof(bitmap)> renderer(&game_of_life, &bitmap);
     auto white = display.get_closest_color(255, 255, 255);
-    auto blue = display.get_closest_color(0, 0, 127);
+auto blue = display.get_closest_color(0, 0, 127);
 
     Uint32 timer_func(Uint32 interval, void *param) {
         // Just generate a dummy event so our mainloop
