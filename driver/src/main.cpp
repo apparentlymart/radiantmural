@@ -26,7 +26,15 @@
     #include <alambre/device/lpd8806.h>
     #include <avr/sleep.h>
     #include <avr/interrupt.h>
+#define __PROG_TYPES_COMPAT__
+    #include <avr/pgmspace.h>
+    #include "ffft.h"
     #include "ledmatrix.h"
+
+    int16_t capture[FFT_N];
+    complex_t bfly[FFT_N];
+    uint16_t spectrum[FFT_N/2];
+    volatile uint8_t samplePos = 0;
 
     volatile uint8_t redraw = 0;
 
@@ -80,29 +88,55 @@
     auto white = strip_device.get_closest_color(255, 255, 255);
     auto blue = strip_device.get_closest_color(0, 0, 127);
 
-    inline void main_loop() {
-        // Enable the overflow interrupt.
-        TIMSK1 |= (1 << TOIE1);
+    ISR(ADC_vect) { // audio-sampling interrupt
+        static const int16_t noiseThreshold = 4;
+        int16_t sample = ADC; // 0-1023
 
-        // Start timer at Fcpu/8
-        TCCR1B |= (1 << CS11);
+        capture[samplePos] =
+            ((sample > (512 - noiseThreshold)) &&
+             (sample < (512 + noiseThreshold))) ? 0 : sample - 512;
+
+        if (++samplePos > FFT_N) ADCSRA &= ~_BV(ADIE); // interrupt off since buffer is full
+
+    }
+
+    inline void main_loop() {
+
+        ADMUX = 0; // analog channel 0
+        ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADATE) | _BV(ADIE) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);
+        ADCSRB = 0; // enable free run mode
+        DIDR0 = 1; // turn off digital input
+        TIMSK0 = 0; // turn off timer0
+
+        sei();
 
         while (1) {
-            /*sleep_enable();
-            set_sleep_mode(SLEEP_MODE_PWR_SAVE);
-            sei();
-            sleep_cpu();
-            sleep_disable();
-            cli();*/
-            redraw = 1;
-            _delay_ms(150);
-            if (redraw) {
-                game_of_life.next_frame();
-                renderer.update();
-                display.update(&bitmap1d.render_bitmap);
-                game_of_life.set_pixel(13, 6);
-                redraw = 0;
+            while(ADCSRA & _BV(ADIE)); // wait for sampling to finish -- then ISR will disable the interrupt
+
+            fft_input(capture, bfly);
+            samplePos = 0;
+            ADCSRA |= _BV(ADIE); // re-enable the interrupt
+            fft_execute(bfly);
+            fft_output(bfly, spectrum);
+
+            for (int x = 0; x < 22; x++) {
+                int ofs = (x + 4) * 2;
+                int size = ((spectrum[ofs] + spectrum[ofs+1])) - 5;
+
+                if (size > 3) {
+                    game_of_life.set_pixel(x + 1, 6);
+                    game_of_life.set_pixel(x + 1, 5);
+                    game_of_life.set_pixel(x + 1, 4);
+                    game_of_life.set_pixel(x, 5);
+                    game_of_life.set_pixel(x + 2, 4);
+                }
             }
+
+            //_delay_ms(150);
+            game_of_life.next_frame();
+            renderer.update();
+            display.update(&bitmap1d.render_bitmap);
+            //game_of_life.set_pixel(13, 6);
         }
     }
 
@@ -197,22 +231,6 @@
 #endif
 
 int main() {
-
-    /*game_of_life.set_pixel(3, 1);
-    game_of_life.set_pixel(4, 1);
-    game_of_life.set_pixel(5, 1);*/
-
-    game_of_life.set_pixel(8, 4);
-    game_of_life.set_pixel(8, 5);
-    game_of_life.set_pixel(8, 6);
-    game_of_life.set_pixel(9, 4);
-    game_of_life.set_pixel(7, 5);
-
-    /*game_of_life.set_pixel(12, 4);
-    game_of_life.set_pixel(12, 5);
-    game_of_life.set_pixel(12, 6);
-    game_of_life.set_pixel(11, 6);
-    game_of_life.set_pixel(10, 5);*/
 
     main_loop();
 

@@ -42,11 +42,14 @@ OBJ_FILES:=$(patsubst src/%.cpp,$(OBJ_DIR)/%.o,$(SOURCE_FILES))
 
 all: $(TARGET_EXEC)
 
-$(TARGET_EXEC): $(OBJ_FILES) $(ALAMBRE_LIB) $(TARGET_DIR)
-	$(CXX) -O3 $(CXX_OPTS) $(OBJ_FILES) $(ALAMBRE_LIB) $(LINK_OPTS) -o $(TARGET_EXEC)
+$(TARGET_EXEC): $(OBJ_FILES) $(OBJ_DIR)/ffft.o $(ALAMBRE_LIB) $(TARGET_DIR)
+	$(CXX) -O3 $(CXX_OPTS) $(OBJ_FILES) $(OBJ_DIR)/ffft.o $(ALAMBRE_LIB) $(LINK_OPTS) -o $(TARGET_EXEC)
 
 $(OBJ_DIR)/%.o: src/%.cpp $(ALAMBRE_INCLUDE_DIR) $(OBJ_DIR) $(HEADER_FILES)
 	@mkdir -p $(@D)
+	$(CXX) -O3 $(CXX_OPTS) -c $< -o $@
+
+$(OBJ_DIR)/ffft.o: src/ffft.S $(OBJ_DIR) $(HEADER_FILES)
 	$(CXX) -O3 $(CXX_OPTS) -c $< -o $@
 
 $(OBJ_DIR):
