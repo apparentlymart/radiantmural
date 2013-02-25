@@ -102,7 +102,7 @@
 
     inline void main_loop() {
 
-        ADMUX = 0; // analog channel 0
+        ADMUX = 0b01000000; // analog channel 0, VREF = AVCC (since we have no other, better reference)
         ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADATE) | _BV(ADIE) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);
         ADCSRB = 0; // enable free run mode
         DIDR0 = 1; // turn off digital input
