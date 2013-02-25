@@ -34,6 +34,33 @@
     int16_t capture[FFT_N];
     complex_t bfly[FFT_N];
     uint16_t spectrum[FFT_N/2];
+    // Noise-level adjustments derived experimentally.
+    // Probably not perfect but they balance things out a bit.
+    uint16_t noise_adjust[24] = {
+        7,
+        7,
+        6,
+        7,
+        3,
+        4,
+        4,
+        3,
+        4,
+        4,
+        4,
+        5,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        7,
+        0,
+        0
+    };
     volatile uint8_t samplePos = 0;
 
     volatile uint8_t redraw = 0;
@@ -121,8 +148,12 @@
 
             for (int x = 0; x < 22; x++) {
                 int ofs = (x + 4) * 2;
-                int size = ((spectrum[ofs] + spectrum[ofs+1])) - 5;
+                int size = ((spectrum[ofs] + spectrum[ofs+1])) - noise_adjust[x] - 4;
 
+                // Uncomment this to generate a simple spectrum graph
+                // that's useful for debugging noise problems.
+                //#define SIMPLE_SPECTRUM_GRAPH
+                #ifndef SIMPLE_SPECTRUM_GRAPH
                 if (size > 3) {
                     game_of_life.set_pixel(x + 1, 6);
                     game_of_life.set_pixel(x + 1, 5);
@@ -130,6 +161,16 @@
                     game_of_life.set_pixel(x, 5);
                     game_of_life.set_pixel(x + 2, 4);
                 }
+                #else
+                for (int y = 0; y < 7; y++) {
+                    if (size < y) {
+                        bitmap.set_pixel(x, y, 0);
+                    }
+                    else {
+                        bitmap.set_pixel(x, y, 31);
+                    }
+                }
+                #endif
             }
 
             //_delay_ms(150);
