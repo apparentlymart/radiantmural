@@ -1,0 +1,135 @@
+
+import system.avr
+import bus.spi
+import capability.graphics1d
+import capability.graphics2d
+import device.lpd8806
+
+import radiantmural.ffft
+import radiantmural.gameoflife
+import radiantmural.gameofliferenderer
+import radiantmural.ledmatrix
+
+const spi_bus = spi.SoftwareMasterOutputBus(avr.B3, avr.B5)
+const led_strip = lpd8806.LedChain(spi_bus)
+
+const fft_processor = ffft.FftProcessor()
+# Noise-level adjustments derived experimentally.
+# Probably not perfect but they balance things out a bit.
+const noise_adjustments = [
+    7,
+    7,
+    6,
+    7,
+    3,
+    4,
+    4,
+    3,
+    4,
+    4,
+    4,
+    5,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    7,
+    0,
+    0,
+] as ArraySlice(UInt16)
+var sample_pos = 0 as UInt8
+var redraw = false
+
+# FIXME: Compute this gradient programmatically rather than hard-coding it
+const palette = [
+    lpd8806.closest_color(0, 0, 48),
+    lpd8806.closest_color(0, 0, 48),
+    lpd8806.closest_color(0, 0, 48),
+    lpd8806.closest_color(0, 0, 48),
+    lpd8806.closest_color(0, 0, 48),
+    lpd8806.closest_color(0, 0, 48),
+    lpd8806.closest_color(0, 0, 48),
+    lpd8806.closest_color(0, 0, 56),
+    lpd8806.closest_color(0, 0, 64),
+    lpd8806.closest_color(0, 0, 72),
+    lpd8806.closest_color(0, 0, 80),
+    lpd8806.closest_color(0, 0, 88),
+    lpd8806.closest_color(0, 0, 96),
+    lpd8806.closest_color(0, 0, 104),
+    lpd8806.closest_color(0, 0, 112),
+    lpd8806.closest_color(0, 0, 120),
+    lpd8806.closest_color(0, 0, 128),
+    lpd8806.closest_color(0, 0, 136),
+    lpd8806.closest_color(0, 0, 144),
+    lpd8806.closest_color(0, 0, 152),
+    lpd8806.closest_color(0, 0, 160),
+    lpd8806.closest_color(0, 0, 168),
+    lpd8806.closest_color(0, 0, 176),
+    lpd8806.closest_color(0, 0, 184),
+    lpd8806.closest_color(0, 0, 192),
+    lpd8806.closest_color(0, 0, 200),
+    lpd8806.closest_color(0, 0, 208),
+    lpd8806.closest_color(0, 0, 216),
+    lpd8806.closest_color(0, 0, 224),
+    lpd8806.closest_color(0, 0, 232),
+    lpd8806.closest_color(0, 0, 240),
+    lpd8806.closest_color(0, 0, 254),
+]
+var bitmap1d = graphics1d.PaletteBitmap(
+    length=161,
+    palette=palette,
+)
+var bitmap2d = graphics1d.BitmapAdapter2dTo1d(
+    bitmap1d,
+    ledmatrix.BitmapAdaptation()
+)
+var game_of_life = gameoflife.GameOfLife(24, 9)
+var renderer = gameofliferenderer.Renderer(
+    game_of_life,
+    bitmap2d,
+)
+
+avr.ADC.reference = AVCC
+avr.ADC.enabled = true
+avr.ADC.channel = 0
+avr.ADC.clock_scale = DIV_128
+avr.ADC.free_run_mode = true
+
+task main:
+    loop:
+        spectrum = fft_processor.spectra_stream.read():
+
+        for x in range(0, 22):
+            var ofs = (x + 4) * 2;
+            var size = (
+                spectrum[ofs] + spectrum[ofs + 1]
+            ) - noise_adjustments[x] - 4
+
+            if size > 3:
+                game_of_life.set_pixel(x + 1, 6)
+                game_of_life.set_pixel(x + 1, 5)
+                game_of_life.set_pixel(x + 1, 4)
+                game_of_life.set_pixel(x, 5)
+                game_of_life.set_pixel(x + 2, 4)
+
+
+        game_of_life.next_frame()
+        renderer.update()
+        led_strip.update(bitmap1d.render_bitmap)
+task sample:
+    var noise_threshold = 4
+    loop:
+        var sample = avr.ADC.sample_stream.read()
+        fft_processor.samples[sample_pos] = (
+            (sample > (512 - noiseThreshold)) and
+            (sample < (512 + noiseThreshold))
+        ) ? 0 : sample - 512;
+
+        sample_pos += 1
+        if sample_pos > len(fft_processor.samples):
+            # Filled our buffer
+            fft_processor.process_samples()

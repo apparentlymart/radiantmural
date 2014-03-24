@@ -1,0 +1,48 @@
+
+class GameOfLife(const width, const height):
+
+    # Multi-dimensional array.
+    # (Shorthand for array(array(array(Bool, width), height), 2) )
+    var world = array(Bool, 2, height, width)
+    var current_world = 0 as UInt8
+    var next_world = 1 as UInt8
+    const coord_type = UInt8
+
+    func next_frame():
+        for y in range(0, height):
+            for x in range(0, width):
+                var above = (y + height - 1) % height
+                var below = (y + 1) % height
+                var left = (x + width - 1) % width
+                var right = (x + 1) % width
+
+                var neighbors = (
+                    self.get_pixel(left, above) +
+                    self.get_pixel(x, above) +
+                    self.get_pixel(right, above) +
+                    self.get_pixel(left, y) +
+                    self.get_pixel(right, y) +
+                    self.get_pixel(left, below) +
+                    self.get_pixel(x, below) +
+                    self.get_pixel(right, below)
+                )
+
+                if neighbors == 3:
+                    world[next_world][y][x] = true
+                elif neighbors < 2 || neighbors > 3:
+                    world[next_world][y][x] = false
+                else:
+                    world[next_world][y][x] = self.get_pixel(x, y)
+
+        next_world = next_world ^ current_world
+        current_world = next_world ^ current_world
+        next_world = next_world ^ current_world
+
+    func get_pixel(coord_type x, coord_type y) [inline]:
+        return world[current_world][y][x]
+
+    func set_pixel(coord_type x, coord_type y) [inline]:
+        return world[current_world][y][x] = 1
+
+    func clear_pixel(coord_type x, coord_type y) [inline]:
+        return world[current_world][y][x] = 0

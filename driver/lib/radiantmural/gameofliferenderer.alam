@@ -1,0 +1,18 @@
+
+class GameOfLifeRenderer(game, bitmap):
+
+    var width = bitmap.width
+    var height = bitmap.height
+
+    func update():
+        for y in range(0, height):
+            for x in range(0, width):
+                var set = game.get_pixel(x, y)
+                if set:
+                    bitmap.set_pixel(x, y, 31)
+                else:
+                    # Decay the pixel color until we reach black
+                    var current = bitmap.get_pixel(x, y)
+                    if current & 0b00011111:
+                        bitmap.set_pixel(x, y, current - 1)
+

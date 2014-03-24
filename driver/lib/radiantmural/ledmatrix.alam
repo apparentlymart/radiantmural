@@ -1,0 +1,47 @@
+
+import capability.graphics1d
+
+func map_coordinates(x, y):
+    """
+    Mapping of 2D bitmap onto a bizarre chopped up, zig-zagging LED strip.
+
+    This implementation of :ala:iface:`graphics1d.Bitmap2dTo1dAdaptation`
+    maps a 24*7 2D surface onto a 1D LED strip cut into zig-zagging
+    smaller strips of irregular lengths.
+
+    The top and bottom rows are shorter than the others at 20 pixels each,
+    with those 20 pixels centered. This means that the two pixels at either
+    end of these rows are not addressable.
+
+    The eight unaddressable coordinates caused by the display's irregular
+    shape are mapped to an additional fictitious pixel at the end of the
+    strip, since the projection function is required to map all coordinates
+    somewhere. This means the length of the 1D surface must be at least 161
+    pixels or the caller must be careful to never access these pixels.
+
+    The 1D coordinate system starts at the bottom right moving left, and then
+    on the row above counts in the opposite direction, and it continues
+    switching in this zig-zag pattern until it reaches the top left.
+    """
+
+    y = 6 - y
+
+    if y == 0:
+        if x < 2 or x > 21:
+            # One of the unaddressable pixels.
+            return 160
+        else:
+            return 21 - x
+    elif y == 6:
+        if x < 2 or x > 21:
+            # One of the unaddressable pixels.
+            return 160
+        else:
+            return 161 - x
+    else:
+        if y & 1:
+            # odd row, so left-to-right
+            return 20 + (y - 1) * 24 + x
+        else:
+            # even row, so right-to-left
+            return 19 + y * 24 - x

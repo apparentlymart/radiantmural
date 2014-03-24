@@ -1,0 +1,32 @@
+
+
+extlib ffft:
+
+    obj "ffft"
+
+    struct Complex:
+        var r as Int16
+        var i as Int16
+
+    func fft_input(src as Ref(Int16), bfly as Ref(Complex))
+    func fft_execute(bfly as Ref(Complex))
+    func fft_output(bfly as Ref(Complex), dest as Ref(UInt16))
+
+
+const width = 128
+
+
+class FftProcessor(width):
+
+    var samples = array(Int16, width)
+    var spectra = Channel(ArraySlice(Int16))
+    var bfly = array(ffft.Complex, width)
+    var spectra = array(UInt16, width / 2)
+    var spectra_stream = Channel(typeof(spectra))
+
+    func process_samples():
+        ffft.fft_input(&(samples[0]), &(bfly[0]))
+        ffft.fft_execute(&(bfly[0]))
+        ffft.fft_output(&(bfly[0]), &(spectra[0]))
+        spectra_stream.write(spectra)
+
