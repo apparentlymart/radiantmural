@@ -62,7 +62,7 @@ extlib:
 	@[ -d extlib ] || mkdir extlib
 
 $(ALAMBRE_ROOT_DIR): extlib
-	[ -d $(ALAMBRE_ROOT_DIR) ] || git clone $(ALAMBRE_GIT_REPO) $(ALAMBRE_ROOT_DIR)
+	[ -d $(ALAMBRE_ROOT_DIR) ] || git clone -b prototype $(ALAMBRE_GIT_REPO) $(ALAMBRE_ROOT_DIR)
 
 $(ALAMBRE_INCLUDE_DIR): $(ALAMBRE_ROOT_DIR)
 
